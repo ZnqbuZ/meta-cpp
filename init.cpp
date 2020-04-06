@@ -46,13 +46,15 @@ template<typename Index> struct doToIndex
 
 template<typename...Types> constexpr int init(Types...args)
 {
-    Display(Arg(true));
-    Display(
-        IsGreater(Arg(int, 5), Arg('e')));
-
+#pragma region 算术运算测试
     Display(
         Add(Arg('e'), Arg(int, 5)));
 
+    Display(
+        Inc(Arg('a')));
+#pragma endregion
+
+#pragma region 选择结构测试
     Display(
         If(IsEqual(Arg(1), Arg(0)),
             True,
@@ -72,10 +74,19 @@ template<typename...Types> constexpr int init(Types...args)
             Arg(2), Arg(2),
             Arg(3), Arg(3),
             Arg(1)));
+#pragma endregion
 
+#pragma region 序对测试
     using mycons = Cons<Int<1>>;
     Display(Car(mycons));
     Display(Cdr(mycons));
+#pragma endregion
+
+#pragma region 逻辑运算测试
+    Display(Arg(true));
+
+    Display(
+        IsGreater(Arg(int, 5), Arg('e')));
 
     Display(
         And(Arg(125), Arg(234)));
@@ -91,6 +102,7 @@ template<typename...Types> constexpr int init(Types...args)
 
     Display(
         Xor(Arg(125), Arg(234)));
+#pragma endregion
 
     return 0;
 }
