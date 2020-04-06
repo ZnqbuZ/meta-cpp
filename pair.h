@@ -23,7 +23,7 @@ template<typename T, typename V = Null> struct Cons
 //序对的元素是不可变的
 #define Car(...) __VA_ARGS__::__Car
 #define Cdr(...) __VA_ARGS__::__Cdr
-//如果需要使用0函数(模板)序对，可将模板包装在一临时结构体中
+//如果需要使用函数(模板)序对，可将模板包装在一临时结构体中
 template<typename T, typename V = Null> struct Cons
 {
     using __Car = T;

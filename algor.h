@@ -9,6 +9,12 @@ template<typename T> struct _isEqual<T, T> { using ret = True; };
 #define IsGreater(...) Ret(_isGreater,__VA_ARGS__)
 template<typename T, typename V> struct _isGreater { using ret = Arg(bool, (Value(T) > Value(V))); };
 
+#define IsLess(...) Ret(_isLess,__VA_ARGS__)
+template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T) < Value(V))); };
+
+#define IsGreaterEqual(...) Not(IsLess(__VA_ARGS__))
+#define IsLessEqual(...) Not(IsGreater(__VA_ARGS__))
+
 //例：If(cond, struct1{fun}, struct2{fun})::fun<context>
 //TODO：对例所示的过程进行更高阶的抽象
 
@@ -16,7 +22,10 @@ template<typename T, typename V> struct _isGreater { using ret = Arg(bool, (Valu
 //If(cond, THEN, ELSE)
 #define If(...) Ret(_If,__VA_ARGS__)
 template<typename cond, typename THEN, typename ELSE = Null> struct _If;
-template<typename THEN, typename ELSE> struct _If<True, THEN, ELSE> { using ret = THEN; };
+template<typename THEN, typename ELSE> struct _If<True, THEN, ELSE>
+{
+    using ret = THEN;
+};
 template<typename THEN, typename ELSE> struct _If<False, THEN, ELSE> { using ret = ELSE; };
 
 //若没有传入ELSE，则在所有条件均不成立的情况下返回Null
@@ -41,8 +50,8 @@ template<typename arg> struct _Switch
     template<typename Default> struct __Switch<Default> { using ret = Default; };
 };
 
-//TODO:测试循环函数
-//For(LoopFunc<Context>, Context, EndCond<Index>, Index = Int<0>, doToIndex<Index> = Inc)
+//这里定义的For函数是一个迭代器，它的运算结果为Func<Func<...Func<Context>...>>
+//For(LoopFunc<Context>, Context, StopBy<Index>, Index = Int<0>, doToIndex<Index> = Inc)
 #define For(...) Ret(_For,__VA_ARGS__)
 template<
     template<typename Context> typename LoopFunc,
@@ -51,11 +60,71 @@ template<
     typename Index = Int<0>,
     template<typename Index> typename doToIndex = _Inc> struct _For
 {
-    template<typename Index> struct __MainLoop
+    //错误的写法
+    // 
+    //template<typename Index, typename Context> struct __MainLoop
+    //{
+    //    using __FuncRet = Ret(LoopFunc, Context);
+    //    using ret =
+    //        If(Ret(StopBy, Index),
+    //            __FuncRet,
+    //            Ret(__MainLoop, Ret(doToIndex, Index), __FuncRet));
+    //};
+
+    template<typename shallStop, typename Index, typename Context> struct __MainLoop;
+    template<typename Index, typename Context> struct __MainLoop<True, Index, Context>
     {
-        //除最后一次循环外抛弃所有循环体函数的返回值
-        using __FuncRet = Ret(LoopFunc, Context);
-        using ret = If(Ret(StopBy, Index), __FuncRet, Ret(__MainLoop, Ret(doToIndex, Index)));
+        using ret = Context;
     };
-    using ret = If(Ret(StopBy, Index), Null, Ret(__MainLoop, Index));
+    template<typename Index, typename Context> struct __MainLoop<False, Index, Context>
+    {
+        using __NextIndex = Ret(doToIndex, Index);
+        using __FuncRet = Ret(LoopFunc, Context);
+
+        using ret =
+            Ret(__MainLoop,
+                Ret(StopBy, __NextIndex),
+                __NextIndex,
+                __FuncRet);
+    };
+
+    using ret =
+        Ret(__MainLoop,
+            Ret(StopBy, Index),
+            Index,
+            Context);
+
+    //以下写法也是正确的(结果正确)，但会产生编译错误
+    // 见init.cpp
+    // 
+    //struct __LoopEnd
+    //{
+    //    template<typename Index, typename Context> struct Func
+    //    {
+    //        using ret = Context;
+    //    };
+    //};
+
+    //struct __MainLoop
+    //{
+    //    template<typename Index, typename Context> struct Func
+    //    {
+    //        using __NextIndex = Ret(doToIndex, Index);
+    //        using __FuncRet = Ret(LoopFunc, Context);
+
+    //        using ret =
+    //            RawRet(
+    //                If(Ret(StopBy, __NextIndex),
+    //                    __LoopEnd,
+    //                    __MainLoop)::Func,
+    //                __NextIndex, __FuncRet);
+    //    };
+    //};
+
+    //using ret =
+    //    RawRet(
+    //        If(Ret(StopBy, Index),
+    //            __LoopEnd,
+    //            __MainLoop)::Func,
+    //        Index, Context);
 };

@@ -1,7 +1,10 @@
 #pragma once
 
 //Ret(Function<Context>, Context...)
-#define Ret(fun,...) typename fun<__VA_ARGS__>::ret
+#define Ret(func,...) typename func<__VA_ARGS__>::ret
+
+//有时可能遇到Ret嵌套，这将导致两个以上typename叠加.这时使用RawRet
+#define RawRet(func,...) func<__VA_ARGS__>::ret
 
 #define Type(...) Ret(_getType,__VA_ARGS__)
 template<typename T> struct _getType { using ret = typename T::__type; };
