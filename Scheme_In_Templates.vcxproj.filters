@@ -32,7 +32,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Scheme_In_Templates.cpp">
+    <ClCompile Include="init.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

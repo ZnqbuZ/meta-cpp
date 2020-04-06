@@ -145,7 +145,7 @@
     <ClInclude Include="typesdef.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Scheme_In_Templates.cpp" />
+    <ClCompile Include="init.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
