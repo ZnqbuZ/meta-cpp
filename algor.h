@@ -18,6 +18,9 @@ template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T
 //例：If(cond, struct1{fun}, struct2{fun})::fun<context>
 //TODO：对例所示的过程进行更高阶的抽象
 
+//TODO：修改if使得其可延迟计算THEN和ELSE
+// 可尝试If(cond,CONS<THEN,ELSE>)
+// 
 //如果需要在If中输出，必须在外层加Format
 //If(cond, THEN, ELSE)
 #define If(...) Ret(_If,__VA_ARGS__)
@@ -57,8 +60,10 @@ template<
     template<typename Context> typename LoopFunc,
     typename Context,
     template<typename Index> typename StopBy,
-    typename Index = Int<0>,
-    template<typename Index> typename doToIndex = _Inc> struct _For
+    template<typename Index> typename doToIndex = _Inc,
+    typename Index = Int<0>> struct _For
+    //注意形参的声明顺序：
+    //如果模板模板参数的形参(如StopBy和doToIndex的参数Index)与其它形参重名，则必须将模板模板参数放在前面
 {
     //错误的写法
     // 
@@ -71,15 +76,15 @@ template<
     //            Ret(__MainLoop, Ret(doToIndex, Index), __FuncRet));
     //};
 
-    template<typename shallStop, typename Index, typename Context> struct __MainLoop;
-    template<typename Index, typename Context> struct __MainLoop<True, Index, Context>
+    template<typename shallStop, typename __Index, typename __Context> struct __MainLoop;
+    template<typename __Index, typename __Context> struct __MainLoop<True, __Index, __Context>
     {
-        using ret = Context;
+        using ret = __Context;
     };
-    template<typename Index, typename Context> struct __MainLoop<False, Index, Context>
+    template<typename __Index, typename __Context> struct __MainLoop<False, __Index, __Context>
     {
-        using __NextIndex = Ret(doToIndex, Index);
-        using __FuncRet = Ret(LoopFunc, Context);
+        using __NextIndex = Ret(doToIndex, __Index);
+        using __FuncRet = Ret(LoopFunc, __Context);
 
         using ret =
             Ret(__MainLoop,
