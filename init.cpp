@@ -33,8 +33,8 @@ struct TestTemp
 
 template <
     template <
-        template <typename... Types> typename myTempTemp>
-    typename myTemp>
+    template <typename... Types> typename myTempTemp>
+typename myTemp>
 struct TestTemp2
 {
     template <template <typename... Types> typename myTempTemp>
@@ -56,16 +56,18 @@ struct packStructB
     template <typename T>
     struct Func
     {
-        using ret =
-            RawRet(If(False,
-                      packStructB,
-                      packStructA)::Func,
-                   Inc(T));
+        //using _ret =
+        //    RawRet(If(False,
+        //        packStructB,
+        //        packStructA)::Func,
+        //        Inc(T));
 
-        template <typename... Ts>
-        using __Func = typename _If<IsLess(T, Int<5>), packStructA, packStructB>::ret::Func<Ts...>;
-        using MyNewRet =
-            typename __Func<Inc(T)>::MyNewRet;
+        using ret = Add(T, Int<1>);
+
+        // template <typename... Ts>
+        // using __Func = typename _If<IsLess(T, Int<5>), packStructA, packStructB>::ret::Func<Ts...>;
+        // using MyNewRet =
+        //     typename __Func<Inc(T)>::MyNewRet;
 
         //此处的递归会产生语法错误
         // TODO：错误分析
@@ -76,8 +78,6 @@ struct packStructB
             packStructA)::Func,
             Inc(T));*/
     };
-
-    template<typename T> using ret = Func<T>;
 };
 
 #pragma region 循环测试
@@ -167,8 +167,8 @@ constexpr int init(Types... args)
 
     Display(
         If(Ret(StopBy, Int<0>),
-           Null,
-           Int<1>));
+            Null,
+            Int<1>));
 
     //Display(
     //    Ret(_If<False, packStructA, packStructB>::ret::Func, Int<1>));
@@ -176,6 +176,12 @@ constexpr int init(Types... args)
     //     typename packStructB::Func<Int<1>>::MyNewRet);
     Display(
         typename packStructB::Func<Int<1>>::ret);
+
+    Display(
+        RawRet(If(False,
+            packStructA,
+            packStructB)::Func,
+            Int<1>));
 
     return 0;
 }

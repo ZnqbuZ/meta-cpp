@@ -15,13 +15,14 @@ template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T
 #define IsGreaterEqual(...) Not(IsLess(__VA_ARGS__))
 #define IsLessEqual(...) Not(IsGreater(__VA_ARGS__))
 
-//Àı£ºIf(cond, struct1{fun}, struct2{fun})::fun<context>
-//TODO£º¶ÔÀıËùÊ¾µÄ¹ı³Ì½øĞĞ¸ü¸ß½×µÄ³éÏó
+//ä¾‹ï¼šIf(cond, struct1{fun}, struct2{fun})::fun<context>
+//TODOï¼šå¯¹ä¾‹æ‰€ç¤ºçš„è¿‡ç¨‹è¿›è¡Œæ›´é«˜é˜¶çš„æŠ½è±¡
 
-//TODO£ºĞŞ¸ÄifÊ¹µÃÆä¿ÉÑÓ³Ù¼ÆËãTHENºÍELSE
-// ¿É³¢ÊÔIf(cond,CONS<THEN,ELSE>)
+//TODOï¼šä½¿ifå»¶è¿Ÿè®¡ç®—THENå’ŒELSE
+// æˆ–è®¸å¯è€ƒè™‘If(cond,CONS<THEN,ELSE>)
+// ä¸å¯è¡Œï¼Œå› ä¸ºä¼¼ä¹THENå’ŒELSEåªè¦ä½œä¸ºå‚æ•°å°±ä¼šè¢«è®¡ç®—
 // 
-//Èç¹ûĞèÒªÔÚIfÖĞÊä³ö£¬±ØĞëÔÚÍâ²ã¼ÓFormat
+//å¦‚æœéœ€è¦åœ¨Ifä¸­è¾“å‡ºï¼Œå¿…é¡»åœ¨å¤–å±‚åŠ Format
 //If(cond, THEN, ELSE)
 #define If(...) Ret(_If,__VA_ARGS__)
 template<typename cond, typename THEN, typename ELSE = Null> struct _If;
@@ -31,7 +32,7 @@ template<typename THEN, typename ELSE> struct _If<True, THEN, ELSE>
 };
 template<typename THEN, typename ELSE> struct _If<False, THEN, ELSE> { using ret = ELSE; };
 
-//ÈôÃ»ÓĞ´«ÈëELSE£¬ÔòÔÚËùÓĞÌõ¼ş¾ù²»³ÉÁ¢µÄÇé¿öÏÂ·µ»ØNull
+//è‹¥æ²¡æœ‰ä¼ å…¥ELSEï¼Œåˆ™åœ¨æ‰€æœ‰æ¡ä»¶å‡ä¸æˆç«‹çš„æƒ…å†µä¸‹è¿”å›Null
 //Ifs(THEN1,cond1,THEN2,cond2,...,ELSE)
 #define Ifs(...) Ret(_Ifs,__VA_ARGS__)
 template<typename THEN = Null, typename cond = True, typename...Tcs> struct _Ifs
@@ -41,7 +42,7 @@ template<typename THEN = Null, typename cond = True, typename...Tcs> struct _Ifs
 
 template<typename ELSE> struct _Ifs<ELSE> { using ret = ELSE; };
 
-//ÈôÃ»ÓĞ´«ÈëDefault£¬ÔòÔÚËùÓĞÇé¿ö¾ù²»Æ¥ÅäÊ±·µ»ØNull
+//è‹¥æ²¡æœ‰ä¼ å…¥Defaultï¼Œåˆ™åœ¨æ‰€æœ‰æƒ…å†µå‡ä¸åŒ¹é…æ—¶è¿”å›Null
 //Switch(arg,THEN1,case1,THEN2,case2,...,Default)
 #define Switch(arg,...) Ret(_Switch<arg>::__Switch,__VA_ARGS__)
 template<typename arg> struct _Switch
@@ -53,7 +54,7 @@ template<typename arg> struct _Switch
     template<typename Default> struct __Switch<Default> { using ret = Default; };
 };
 
-//ÕâÀï¶¨ÒåµÄForº¯ÊıÊÇÒ»¸öµü´úÆ÷£¬ËüµÄÔËËã½á¹ûÎªFunc<Func<...Func<Context>...>>
+//è¿™é‡Œå®šä¹‰çš„Forå‡½æ•°æ˜¯ä¸€ä¸ªè¿­ä»£å™¨ï¼Œå®ƒçš„è¿ç®—ç»“æœä¸ºFunc<Func<...Func<Context>...>>
 //For(LoopFunc<Context>, Context, StopBy<Index>, Index = Int<0>, doToIndex<Index> = Inc)
 #define For(...) Ret(_For,__VA_ARGS__)
 template<
@@ -62,10 +63,11 @@ template<
     template<typename Index> typename StopBy,
     template<typename Index> typename doToIndex = _Inc,
     typename Index = Int<0>> struct _For
-    //×¢ÒâĞÎ²ÎµÄÉùÃ÷Ë³Ğò£º
-    //Èç¹ûÄ£°åÄ£°å²ÎÊıµÄĞÎ²Î(ÈçStopByºÍdoToIndexµÄ²ÎÊıIndex)ÓëÆäËüĞÎ²ÎÖØÃû£¬Ôò±ØĞë½«Ä£°åÄ£°å²ÎÊı·ÅÔÚÇ°Ãæ
+    // æ³¨æ„å£°æ˜å½¢å‚çš„é¡ºåºï¼Œå¦‚æœæ¨¡æ¿æ¨¡æ¿å‚æ•°çš„å‚æ•°ä¸å…¶å®ƒå‚æ•°é‡ååˆ™å¿…é¡»
+    // é¦–å…ˆå£°æ˜æ¨¡æ¿æ¨¡æ¿å‚æ•°. å¦‚æœ¬å‡½æ•°ä¸­çš„StopByå’ŒdoToIndexå¿…é¡»åœ¨
+    // Indexä¹‹å‰ï¼Œå¦åˆ™æœ‰å¯èƒ½å‡ºç°é”™è¯¯.
 {
-    //´íÎóµÄĞ´·¨
+    //é”™è¯¯çš„å†™æ³•
     // 
     //template<typename Index, typename Context> struct __MainLoop
     //{
@@ -99,8 +101,8 @@ template<
             Index,
             Context);
 
-    //ÒÔÏÂĞ´·¨Ò²ÊÇÕıÈ·µÄ(½á¹ûÕıÈ·)£¬µ«»á²úÉú±àÒë´íÎó
-    // ¼ûinit.cpp
+    //ä»¥ä¸‹å†™æ³•ä¹Ÿæ˜¯æ­£ç¡®çš„(ç»“æœæ­£ç¡®)ï¼Œä½†ä¼šäº§ç”Ÿç¼–è¯‘é”™è¯¯
+    // è§init.cpp
     // 
     //struct __LoopEnd
     //{

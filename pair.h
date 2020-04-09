@@ -3,15 +3,15 @@
 #include "typesdef.h"
 
 #ifdef SCHEME
-//SchemeÊ½µÄĞò¶Ô¶¨Òå£¬´ËÖÖ¶¨Òå½«Ê¹DisplayÊä³ö´íÎó
+//Schemeå¼çš„åºå¯¹å®šä¹‰ï¼Œæ­¤ç§å®šä¹‰å°†ä½¿Displayè¾“å‡ºé”™è¯¯
 
-//Ğò¶ÔµÄÔªËØÊÇ²»¿É±äµÄ
+//åºå¯¹çš„å…ƒç´ æ˜¯ä¸å¯å˜çš„
 #define Car(...) Ret(__VA_ARGS__::__dispatcher,True)
 #define Cdr(...) Ret(__VA_ARGS__::__dispatcher,False)
-//Èç¹ûĞèÒªº¯Êı(Ä£°å)Ğò¶Ô£¬¿É½«Ä£°å°ü×°ÔÚÒ»ÁÙÊ±½á¹¹ÌåÖĞ
+//å¦‚æœéœ€è¦å‡½æ•°(æ¨¡æ¿)åºå¯¹ï¼Œå¯å°†æ¨¡æ¿åŒ…è£…åœ¨ä¸€ä¸´æ—¶ç»“æ„ä½“ä¸­
 template<typename T, typename V = Null> struct Cons
 {
-    //TrueºÍFalse½ö½öÊÇ±ê¼Ç£¬ËùÒÔ²»Ê¹ÓÃIf
+    //Trueå’ŒFalseä»…ä»…æ˜¯æ ‡è®°ï¼Œæ‰€ä»¥ä¸ä½¿ç”¨If
     template<typename b> struct __dispatcher;
     template<> struct __dispatcher<True> { using ret = T; };
     template<> struct __dispatcher<False> { using ret = V; };
@@ -20,10 +20,10 @@ template<typename T, typename V = Null> struct Cons
 
 #ifndef SCHEME
 
-//Ğò¶ÔµÄÔªËØÊÇ²»¿É±äµÄ
+//åºå¯¹çš„å…ƒç´ æ˜¯ä¸å¯å˜çš„
 #define Car(...) __VA_ARGS__::__Car
 #define Cdr(...) __VA_ARGS__::__Cdr
-//Èç¹ûĞèÒªÊ¹ÓÃº¯Êı(Ä£°å)Ğò¶Ô£¬¿É½«Ä£°å°ü×°ÔÚÒ»ÁÙÊ±½á¹¹ÌåÖĞ
+//å¦‚æœéœ€è¦ä½¿ç”¨å‡½æ•°(æ¨¡æ¿)åºå¯¹ï¼Œå¯å°†æ¨¡æ¿åŒ…è£…åœ¨ä¸€ä¸´æ—¶ç»“æ„ä½“ä¸­
 template<typename T, typename V = Null> struct Cons
 {
     using __Car = T;
@@ -31,7 +31,7 @@ template<typename T, typename V = Null> struct Cons
 };
 #endif
 
-//TODO£ºÁ´±í
+//TODOï¼šé“¾è¡¨
 template<typename T, typename...Ts> struct _List
 {
 

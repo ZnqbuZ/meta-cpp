@@ -8,6 +8,8 @@
 //仅支持输出字符的ASCII码
 //必须绑定行号，因为VS输出的行号不准确，而且会合并内容相同的警告消息
 #define Display(...) __CastAndBind<__VA_ARGS__, __LINE__>::ret
+
+#pragma region CastAndBind
 template <int Line>
 struct Line__;
 
@@ -160,3 +162,11 @@ __LetterCastAndBindGenerator(X);
 __LetterCastAndBindGenerator(Y);
 __LetterCastAndBindGenerator(Z);
 #pragma endregion
+
+#pragma endregion
+
+template <typename T>
+struct _display
+{
+    static constexpr char msg = 1/( sizeof(T)-sizeof(T));
+};

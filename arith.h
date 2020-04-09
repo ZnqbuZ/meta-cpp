@@ -2,7 +2,7 @@
 
 #include "typesdef.h"
 
-//后继
+//鍚庣户
 //Inc(Arg: M)::Ret = (M)Arg: M++
 #define Inc(...) Ret(_Inc,__VA_ARGS__)
 template<typename M> struct _Inc { using ret = Arg(Type(M), Value(M) + 1); };
@@ -15,7 +15,7 @@ template<typename M> struct _Dec { using ret = Arg(Type(M), Value(M) - 1); };
 #define Neg(...) Ret(_Neg,__VA_ARGS__)
 template<typename M> struct _Neg { using ret = Arg(Type(M), -Value(M)); };
 
-#pragma region 四则运算
+#pragma region 鍥涘垯杩愮畻
 //Add(Arg: M, Arg: N)::Ret = (M)Arg: M+N
 #define Add(...) Ret(_Add,__VA_ARGS__)
 template<typename M, typename N> struct _Add { using ret = Arg(Type(M), Value(M) + Value(N)); };
@@ -30,7 +30,7 @@ template<typename M, typename N> struct _Mul { using ret = Arg(Type(M), Value(M)
 template<typename M, typename N> struct _Div { using ret = Arg(Type(M), Value(M) / Value(N)); };
 #pragma endregion
 
-#pragma region 逻辑运算
+#pragma region 閫昏緫杩愮畻
 //And(Arg: A, Arg: B)::Ret = (A)Arg: A&B
 #define And(...) Ret(_And,__VA_ARGS__)
 template<typename A, typename B> struct _And { using ret = Arg(Type(A), Value(A)& Value(B)); };
