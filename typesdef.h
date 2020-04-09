@@ -3,29 +3,29 @@
 //Ret(Function<Context>, Context...)
 #define Ret(func,...) typename func<__VA_ARGS__>::ret
 
-//æœ‰æ—¶å¯èƒ½é‡åˆ°RetåµŒå¥—ï¼Œè¿™å°†å¯¼è‡´ä¸¤ä¸ªä»¥ä¸Štypenameå åŠ .è¿™æ—¶ä½¿ç”¨RawRet
+//ÓĞÊ±¿ÉÄÜÓöµ½RetÇ¶Ì×£¬Õâ½«µ¼ÖÂÁ½¸öÒÔÉÏtypenameµş¼Ó.ÕâÊ±Ê¹ÓÃRawRet
 #define RawRet(func,...) func<__VA_ARGS__>::ret
 
 #define Type(...) Ret(_getType,__VA_ARGS__)
 template<typename T> struct _getType { using ret = typename T::__type; };
 
-//ä¸èƒ½ä½¿ç”¨autoï¼Œå¦åˆ™è¾“å‡ºå°†æ— æ³•æ­£ç¡®è¯»å–ç±»å‹å
+//²»ÄÜÊ¹ÓÃauto£¬·ñÔòÊä³ö½«ÎŞ·¨ÕıÈ·¶ÁÈ¡ÀàĞÍÃû
 #define Value(...) _getValue<__VA_ARGS__>::ret
 template<typename T> struct _getValue { static constexpr Type(T) ret = T::__value; };
 
-//ä¸å…è®¸ç±»å‹åµŒå¥—ï¼Œå¦‚IntType<IntType<1>>
+//²»ÔÊĞíÀàĞÍÇ¶Ì×£¬ÈçIntType<IntType<1>>
 template<typename T, T value> struct Arg__
 {
     using __type = T;
     static constexpr T __value = value;
 };
 
-//MSVCå°†__VA_ARGS__çœ‹åšä¸ºä¸€ä¸ªå‚æ•°æ•´ä½“ï¼Œæ‰€ä»¥å¿…é¡»åŠ ä¸­é—´å±‚__Expand
+//MSVC½«__VA_ARGS__¿´×öÎªÒ»¸ö²ÎÊıÕûÌå£¬ËùÒÔ±ØĞë¼ÓÖĞ¼ä²ã__Expand
 #define __Expand(...)                           __VA_ARGS__
 #define __UntypedArg(value)                     Arg__<decltype(value),value>
 #define __TypedArg(type,value)                  Arg__<type,value>
 #define __FIND_THIRD_ARG(arg1,arg2,arg3,...)    arg3
-//ç”¨äºåˆ›å»ºæ–°å˜é‡ï¼Œå¯çœç•¥ç±»å‹è¯´æ˜
+//ÓÃÓÚ´´½¨ĞÂ±äÁ¿£¬¿ÉÊ¡ÂÔÀàĞÍËµÃ÷
 //Arg(optional type, value)
 #define Arg(...)                                __Expand(\
                                                     __Expand(\
