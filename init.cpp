@@ -42,41 +42,41 @@ struct TestTemp2
 };
 #pragma endregion
 
-struct packStructA
-{
-    template <typename T>
-    struct Func
-    {
-        using ret = Add(T, Int<2>);
-        using MyNewRet = Add(T, Int<100>);
-    };
-};
-struct packStructB
-{
-    template <typename T>
-    struct Func
-    {
-        using _ret =
-            RawRet(If(IsGreater(T, Int<0>),
-                packStructB,
-                packStructA)::Func,
-                Inc(T));
-
-        // template <typename... Ts>
-        // using __Func = typename _If<IsLess(T, Int<5>), packStructA, packStructB>::ret::Func<Ts...>;
-        // using MyNewRet =
-        //     typename __Func<Inc(T)>::MyNewRet;
-
-        //此处的递归会产生语法错误
-        // TODO：错误分析
-        // 是不是可以加一个Caller？
-        //
-        /*RawRet(If(IsLess(T, Int<5>),
-            packStructB,
-            packStructA)::Func,
-            Inc(T));*/
-    };
-};
+//struct packStructA
+//{
+//    template <typename T>
+//    struct Func
+//    {
+//        using ret = Add(T, Int<2>);
+//        using MyNewRet = Add(T, Int<100>);
+//    };
+//};
+//struct packStructB
+//{
+//    template <typename T>
+//    struct Func
+//    {
+//        using ret =
+//            RawRet(If(IsGreater(T, Int<0>),
+//                packStructA,
+//                packStructB)::Func,
+//                Inc(T));
+//
+//        // template <typename... Ts>
+//        // using __Func = typename _If<IsLess(T, Int<5>), packStructA, packStructB>::ret::Func<Ts...>;
+//        // using MyNewRet =
+//        //     typename __Func<Inc(T)>::MyNewRet;
+//
+//        //此处的递归会产生语法错误
+//        // TODO：错误分析
+//        // 是不是可以加一个Caller？
+//        //
+//        /*RawRet(If(IsLess(T, Int<5>),
+//            packStructB,
+//            packStructA)::Func,
+//            Inc(T));*/
+//    };
+//};
 
 #pragma region 循环测试
 
@@ -162,26 +162,35 @@ constexpr int init(Types... args)
 
     // Display(
     //     For(LoopFunc, Int<3>, StopBy));
-
-    Display(
-        If(Ret(StopBy, Int<0>),
-            Null,
-            Int<1>));
-
+    //
+    //Display(
+    //    If(Ret(StopBy, Int<0>),
+    //        Null,
+    //        Int<1>));
+    //
     //Display(
     //    Ret(_If<False, packStructA, packStructB>::ret::Func, Int<1>));
     // Display(
     //     typename packStructB::Func<Int<1>>::MyNewRet);
-    Display(
-        typename packStructB::Func<Int<1>>::ret);
+    //Display(
+    //    typename packStructB::Func<Int<1>>::ret);
+    //
+    //Display(
+    //    RawRet(If(False,
+    //        packStructA,
+    //        packStructB)::Func,
+    //        Int<1>));
+    //
+    //Display(Ret(packStructB::Func, Int<0>));
 
-    Display(
-        RawRet(If(False,
-            packStructA,
-            packStructB)::Func,
-            Int<1>));
-
-    Display(Ret(packStructB::Func, Int<0>));
+    if constexpr (Value(Ret(StopBy, Int<0>)))
+    {
+        Display(Null);
+    }
+    else
+    {
+        Display(Int<1>);
+    }
 
     return 0;
 }
