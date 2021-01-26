@@ -6,6 +6,8 @@
 #include "arith.h"
 #include "pair.h"
 #include "algor.h"
+#include "stream.h"
+#include <type_traits>
 
 #pragma region 阶乘
 template <typename T>
@@ -42,42 +44,6 @@ struct TestTemp2
 };
 #pragma endregion
 
-//struct packStructA
-//{
-//    template <typename T>
-//    struct Func
-//    {
-//        using ret = Add(T, Int<2>);
-//        using MyNewRet = Add(T, Int<100>);
-//    };
-//};
-//struct packStructB
-//{
-//    template <typename T>
-//    struct Func
-//    {
-//        using ret =
-//            RawRet(If(IsGreater(T, Int<0>),
-//                packStructA,
-//                packStructB)::Func,
-//                Inc(T));
-//
-//        // template <typename... Ts>
-//        // using __Func = typename _If<IsLess(T, Int<5>), packStructA, packStructB>::ret::Func<Ts...>;
-//        // using MyNewRet =
-//        //     typename __Func<Inc(T)>::MyNewRet;
-//
-//        //此处的递归会产生语法错误
-//        // TODO：错误分析
-//        // 是不是可以加一个Caller？
-//        //
-//        /*RawRet(If(IsLess(T, Int<5>),
-//            packStructB,
-//            packStructA)::Func,
-//            Inc(T));*/
-//    };
-//};
-
 #pragma region 循环测试
 
 template <typename Index>
@@ -103,29 +69,32 @@ template <typename... Types>
 constexpr int init(Types... args)
 {
 #pragma region 算术运算测试
-    //Display(
+    //Format(
     //    Add(Arg('e'), Arg(int, 5)));
-
-    //Display(
+    //
+    //Format(
+    //    Mul(Arg('e'), Arg(int, 5)));
+    //
+    //Format(
     //    Inc(Arg('a')));
 #pragma endregion
 
 #pragma region 选择结构测试
-    //Display(
+    //Format(
     //    If(IsEqual(Arg(1), Arg(0)),
     //        True,
     //        False));
 
-    //Display(
+    //Format(
     //    Ifs(Arg(1), IsEqual(Arg(1), Arg(0)),
     //        Arg(2), IsEqual(Arg(1), Arg(6))));
 
     //Ifs(
     //    Arg(1), IsEqual(Arg(1), Arg(0)),
     //    Arg(2), IsEqual(Arg(1), Arg(6)),
-    //    Display(Arg(3)));
+    //    Format(Arg(3)));
 
-    //Display(
+    //Format(
     //    Switch(Arg(1),
     //        Arg(2), Arg(2),
     //        Arg(3), Arg(3),
@@ -134,64 +103,51 @@ constexpr int init(Types... args)
 
 #pragma region 序对测试
     //using mycons = Cons<Int<1>>;
-    //Display(Car(mycons));
-    //Display(Cdr(mycons));
+    //Format(Car(mycons));
+    //Format(Cdr(mycons));
 #pragma endregion
 
 #pragma region 逻辑运算测试
-    //Display(Arg(true));
+    //Format(Arg(true));
 
-    //Display(
+    //Format(
     //    IsGreater(Arg(int, 5), Arg('e')));
 
-    //Display(
+    //Format(
     //    And(Arg(125), Arg(234)));
 
-    //Display(
+    //Format(
     //    Or(Arg(125), Arg(234)));
 
-    //Display(
+    //Format(
     //    Not(Arg(125)));
 
-    //Display(
+    //Format(
     //    Not(Arg(true)));
 
-    //Display(
+    //Format(
     //    Xor(Arg(125), Arg(234)));
 #pragma endregion
 
-    // Display(
-    //     For(LoopFunc, Int<3>, StopBy));
-    //
-    //Display(
-    //    If(Ret(StopBy, Int<0>),
-    //        Null,
-    //        Int<1>));
-    //
-    //Display(
-    //    Ret(_If<False, packStructA, packStructB>::ret::Func, Int<1>));
-    // Display(
-    //     typename packStructB::Func<Int<1>>::MyNewRet);
-    //Display(
-    //    typename packStructB::Func<Int<1>>::ret);
-    //
-    //Display(
-    //    RawRet(If(False,
-    //        packStructA,
-    //        packStructB)::Func,
-    //        Int<1>));
-    //
-    //Display(Ret(packStructB::Func, Int<0>));
+    Format(STREAM_CAR(evens));
+    Format(STREAM_CAR(STREAM_CDR(evens)));
 
-    if constexpr (Value(Ret(StopBy, Int<0>)))
-    {
-        Display(Null);
-    }
-    else
-    {
-        Display(Int<1>);
-    }
+    Format(STREAM_CAR(odds));
+    Format(STREAM_CAR(STREAM_CDR(odds)));
 
+    Format(STREAM_CAR(integers));
+    Format(STREAM_CAR(STREAM_CDR(integers)));
+    STREAM_CDR(integers);
+
+    using my_cons =
+        Cons<
+        Cons<Int<1>, Int<2>>,
+        Cons<Int<3>,
+        Cons<Int<5>, Int<9>>>>;
+
+    CONS_MAP<_Inc>::on<my_cons>::ret;
+
+    //If(IsGreater(Int<1>, Int<0>), Int<3>, Int<4>);
     return 0;
 }
 

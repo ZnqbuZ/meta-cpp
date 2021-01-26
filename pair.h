@@ -24,15 +24,33 @@ template<typename T, typename V = Null> struct Cons
 #define Car(...) __VA_ARGS__::__Car
 #define Cdr(...) __VA_ARGS__::__Cdr
 //如果需要使用函数(模板)序对，可将模板包装在一临时结构体中
-template<typename T, typename V = Null> struct Cons
+template<typename T, typename U = Null> struct Cons
 {
     using __Car = T;
-    using __Cdr = V;
+    using __Cdr = U;
 };
 #endif
 
-//TODO：链表
-template<typename T, typename...Ts> struct _List
+//表
+#define List(...) Ret(__MK_List, __VA_ARGS__)
+template<typename T, typename...Ts> struct __MK_List
 {
+    using ret = Cons<T, __MK_List<Ts...>>;
+};
 
+template<
+    template<typename T> typename F>
+struct CONS_MAP
+{
+    template<typename U>
+    struct on
+    {
+        using ret = Ret(F, U);
+    };
+
+    template<typename P, typename Q>
+    struct on<Cons<P, Q>>
+    {
+        using ret = Cons<Ret(on, P), Ret(on, Q)>;
+    };
 };

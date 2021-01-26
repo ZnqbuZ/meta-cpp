@@ -1,6 +1,17 @@
 #pragma once
 #include "typesdef.h"
 #include "arith.h"
+#include "pair.h"
+
+// 复合函数
+template<
+    template<typename U> typename f,
+    template<typename T> typename g,
+    typename T>
+    struct composition
+{
+    using ret = Ret(f, Ret(g, T));
+};
 
 #define IsEqual(...) Ret(_isEqual,__VA_ARGS__)
 template<typename T, typename V> struct _isEqual { using ret = False; };
@@ -15,6 +26,8 @@ template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T
 #define IsGreaterEqual(...) Not(IsLess(__VA_ARGS__))
 #define IsLessEqual(...) Not(IsGreater(__VA_ARGS__))
 
+//template<typename T> constexpr add_rvalue_reference_t<T> typedval();
+
 //例：If(cond, struct1{fun}, struct2{fun})::fun<context>
 //TODO：对例所示的过程进行更高阶的抽象
 
@@ -24,13 +37,20 @@ template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T
 // 
 //如果需要在If中输出，必须在外层加Format
 //If(cond, THEN, ELSE)
-#define If(...) Ret(_If,__VA_ARGS__)
-template<typename cond, typename THEN, typename ELSE = Null> struct _If;
-template<typename THEN, typename ELSE> struct _If<True, THEN, ELSE>
+//#define If(...) Ret(_If,__VA_ARGS__)
+#define If(cond, THEN, ELSE) typename _If<cond,THEN>::template ret<ELSE>
+template <typename cond, typename THEN> struct _If;
+template<typename THEN> struct _If<True, THEN>
 {
-    using ret = THEN;
+    template<typename T> using ret = THEN;
 };
-template<typename THEN, typename ELSE> struct _If<False, THEN, ELSE> { using ret = ELSE; };
+template<typename THEN> struct _If<False, THEN>
+{
+    template<typename T> using ret = T;
+};
+
+//Ifs和Switch仅可用于g++，我也不知道为什么
+//因为上面的If宏的ret之前必须加template，都怪SB的MSVC
 
 //若没有传入ELSE，则在所有条件均不成立的情况下返回Null
 //Ifs(THEN1,cond1,THEN2,cond2,...,ELSE)
@@ -43,11 +63,12 @@ template<typename THEN = Null, typename cond = True, typename...Tcs> struct _Ifs
 template<typename ELSE> struct _Ifs<ELSE> { using ret = ELSE; };
 
 //若没有传入Default，则在所有情况均不匹配时返回Null
-//Switch(arg,THEN1,case1,THEN2,case2,...,Default)
+//Switch(arg, THEN1, case1, THEN2, case2, ..., Default)
 #define Switch(arg,...) Ret(_Switch<arg>::__Switch,__VA_ARGS__)
 template<typename arg> struct _Switch
 {
-    template<typename THEN = Null, typename __case = arg, typename...Tcs> struct __Switch
+    template<typename THEN = Null, typename __case = arg, typename...Tcs>
+    struct __Switch
     {
         using ret = If(IsEqual(arg, __case), THEN, Ret(__Switch, Tcs...));
     };
@@ -55,7 +76,7 @@ template<typename arg> struct _Switch
 };
 
 //这里定义的For函数是一个迭代器，它的运算结果为Func<Func<...Func<Context>...>>
-//For(LoopFunc<Context>, Context, StopBy<Index>, Index = Int<0>, doToIndex<Index> = Inc)
+//For(LoopFunc<Context>, Context, StopBy<Index>, doToIndex<Index> = Inc, Index = Int<0>)
 #define For(...) Ret(_For,__VA_ARGS__)
 template<
     template<typename Context> typename LoopFunc,

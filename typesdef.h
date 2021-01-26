@@ -1,9 +1,11 @@
 #pragma once
 
+#include <type_traits>
+
 //Ret(Function<Context>, Context...)
 #define Ret(func,...) typename func<__VA_ARGS__>::ret
 
-//有时可能遇到Ret嵌套，这将导致两个以上typename叠加.这时使用RawRet
+//有时可能遇到Ret嵌套，这将导致两个以上typename叠加. 这时使用RawRet
 #define RawRet(func,...) func<__VA_ARGS__>::ret
 
 #define Type(...) Ret(_getType,__VA_ARGS__)
@@ -22,7 +24,7 @@ template<typename T, T value> struct Arg__
 
 //MSVC将__VA_ARGS__看做为一个参数整体，所以必须加中间层__Expand
 #define __Expand(...)                           __VA_ARGS__
-#define __UntypedArg(value)                     Arg__<decltype(value),value>
+#define __UntypedArg(value)                     Arg__<std::decay_t<decltype(value)>,value>
 #define __TypedArg(type,value)                  Arg__<type,value>
 #define __FIND_THIRD_ARG(arg1,arg2,arg3,...)    arg3
 //用于创建新变量，可省略类型说明
@@ -47,4 +49,4 @@ template<char ch>   using Char = Arg__<char, ch>;
 using True = Bool<true>;
 using False = Bool<false>;
 
-struct Null {};
+struct Null;

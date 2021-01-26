@@ -7,13 +7,16 @@
 #define Inc(...) Ret(_Inc,__VA_ARGS__)
 template<typename M> struct _Inc { using ret = Arg(Type(M), Value(M) + 1); };
 
-//Dec(Arg: M)::Ret = (M)Arg: M--
-#define Dec(...) Ret(_Dec,__VA_ARGS__)
-template<typename M> struct _Dec { using ret = Arg(Type(M), Value(M) - 1); };
-
+//相反数
 //Neg(Arg: M)::Ret = (M)Arg: -M
 #define Neg(...) Ret(_Neg,__VA_ARGS__)
 template<typename M> struct _Neg { using ret = Arg(Type(M), -Value(M)); };
+
+//前驱
+//Dec(Arg: M)::Ret = (M)Arg: M--
+//#define Dec(...) Neg(Inc(Neg(__VA_ARGS__))
+#define Dec(...) Ret(_Dec,__VA_ARGS__)
+template<typename M> struct _Dec { using ret = Arg(Type(M), Value(M) - 1); };
 
 #pragma region 四则运算
 //Add(Arg: M, Arg: N)::Ret = (M)Arg: M+N

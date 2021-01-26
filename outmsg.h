@@ -3,40 +3,41 @@
 #include "typesdef.h"
 #include "pair.h"
 #include "algor.h"
+#include <type_traits>
 
 //将变量转换为基础形式(Int、Bool、Char、Null)，以警告消息的形式输出
 //仅支持输出字符的ASCII码
 //必须绑定行号，因为VS输出的行号不准确，而且会合并内容相同的警告消息
-#define Display(...) __CastAndBind<__VA_ARGS__, __LINE__>::ret
+#define Format(...) __CastAndBind<__VA_ARGS__, __LINE__>::ret
 
 #pragma region CastAndBind
 template <int Line>
-struct Line__;
+struct __Line_;
 
 template <typename T, int LINE>
 struct __CastAndBind
 {
-    using ret = Cons<Arg(Value(T)), Line__<LINE>>;
+    using ret = Cons<Arg(Value(T)), __Line_<LINE>>;
 };
 template <int LINE>
 struct __CastAndBind<True, LINE>
 {
-    using ret = Cons<True, Line__<LINE>>;
+    using ret = Cons<True, __Line_<LINE>>;
 };
 template <int LINE>
 struct __CastAndBind<False, LINE>
 {
-    using ret = Cons<False, Line__<LINE>>;
+    using ret = Cons<False, __Line_<LINE>>;
 };
-/*template<bool b, int LINE> struct __CastAndBind<Bool<b>, LINE> { using ret = Cons<Bool<b>, Line__<LINE>>; };*/
+/*template<bool b, int LINE> struct __CastAndBind<Bool<b>, LINE> { using ret = Cons<Bool<b>, __Line_<LINE>>; };*/
 template <int LINE>
 struct __CastAndBind<Null, LINE>
 {
-    using ret = Cons<Null, Line__<LINE>>;
+    using ret = Cons<Null, __Line_<LINE>>;
 };
 
 // #define __LetterTypeGenerator(letter) using letter = Arg(#@letter)
-// 已弃用.因为仅MSVC支持#@
+// 已弃用. 因为仅MSVC支持#@
 struct Letter__
 {
 #pragma region LowerCase
@@ -102,7 +103,7 @@ struct Letter__
     template <int LINE>                                   \
     struct __CastAndBind<Letter__::letter, LINE>          \
     {                                                     \
-        using ret = Cons<Letter__::letter, Line__<LINE>>; \
+        using ret = Cons<Letter__::letter, __Line_<LINE>>; \
     }
 
 #pragma region LowerCase
@@ -168,5 +169,5 @@ __LetterCastAndBindGenerator(Z);
 template <typename T>
 struct _display
 {
-    static constexpr char msg = 1/( sizeof(T)-sizeof(T));
+    static constexpr char msg = 1 / (sizeof(T) - sizeof(T));
 };
