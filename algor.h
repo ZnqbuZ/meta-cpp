@@ -4,24 +4,54 @@
 #include "pair.h"
 
 // 复合函数
-template<
-    template<typename U> typename f,
-    template<typename T> typename g,
-    typename T>
-    struct composition
+//template<
+//    typename f,
+//    typename g,
+//    typename T>
+//    struct composition
+//{
+//    using ret = f::Func<g::Func<T>>;//是否需要加template？
+//};
+
+struct compose
 {
-    using ret = Ret(f, Ret(g, T));
+    template<typename ARGS> struct Func;
+
+    template<typename T, typename V>
+    struct Func<List<T, V>>
+    {
+        template<typename U> using ret = Ret(T::template Func, Ret(V::template Func, U));//是否需要加template？
+    };
 };
 
-#define IsEqual(...) Ret(_isEqual,__VA_ARGS__)
-template<typename T, typename V> struct _isEqual { using ret = False; };
-template<typename T> struct _isEqual<T, T> { using ret = True; };
+//#define IsEqual(...) Ret(_isEqual,__VA_ARGS__)
+//template<typename T, typename V> struct _isEqual { using ret = False; };
+//template<typename T> struct _isEqual<T, T> { using ret = True; };
 
-#define IsGreater(...) Ret(_isGreater,__VA_ARGS__)
-template<typename T, typename V> struct _isGreater { using ret = Arg(bool, (Value(T) > Value(V))); };
+#define IsEqual(...) Ret(_isEqual::Func, List<__VA_ARGS__>)
+struct _isEqual
+{
+    template<typename ARGS> struct Func;
 
-#define IsLess(...) Ret(_isLess,__VA_ARGS__)
-template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T) < Value(V))); };
+    template<typename T, typename V>
+    struct Func<List<T, V>> { using ret = False; };
+
+    template<typename T>
+    struct Func<List<T, T>> { using ret = True; };
+};
+
+DEFN_BINARY_FUN(bool, isValueEqual, x, y, (x == y));
+DEFN_BINARY_FUN(bool, isGreater, x, y, (x > y));
+DEFN_BINARY_FUN(bool, isLess, x, y, (x < y));
+#define IsValueEqual(...)   Ret(_isValueEqual::Func, List<__VA_ARGS__>)
+#define IsGreater(...)      Ret(_isGreater::Func, List<__VA_ARGS__>)
+#define IsLess(...)         Ret(_isLess::Func, List<__VA_ARGS__>)
+
+//#define IsGreater(...) Ret(_isGreater,__VA_ARGS__)
+//template<typename T, typename V> struct _isGreater { using ret = Arg(bool, (Value(T) > Value(V))); };
+//
+//#define IsLess(...) Ret(_isLess,__VA_ARGS__)
+//template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T) < Value(V))); };
 
 #define IsGreaterEqual(...) Not(IsLess(__VA_ARGS__))
 #define IsLessEqual(...) Not(IsGreater(__VA_ARGS__))
@@ -38,15 +68,43 @@ template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T
 //如果需要在If中输出，必须在外层加Format
 //If(cond, THEN, ELSE)
 //#define If(...) Ret(_If,__VA_ARGS__)
-#define If(cond, THEN, ELSE) typename _If<cond,THEN>::template ret<ELSE>
-template <typename cond, typename THEN> struct _If;
-template<typename THEN> struct _If<True, THEN>
+
+
+//#define If(cond, THEN, ELSE) typename _Do<THEN>::template _If<cond>::template _Else<ELSE>;
+//template<typename THEN> struct _Do
+//{
+//    template<typename cond> struct _If;
+//    template<> struct _If<True> { template<typename T> using _Else = THEN; };
+//    template<> struct _If<False> { template<typename T> using _Else = T; };
+//};
+
+//#define If(cond, THEN, ELSE) typename _If<cond,THEN>::template ret<ELSE>
+//template <typename cond, typename THEN> struct _If;
+//template<typename THEN> struct _If<True, THEN>
+//{
+//    template<typename T> using ret = THEN;
+//};
+//template<typename THEN> struct _If<False, THEN>
+//{
+//    template<typename T> using ret = T;
+//};
+
+#define If(...) Ret(_if::template Func, List<__VA_ARGS__>)
+struct _if
 {
-    template<typename T> using ret = THEN;
-};
-template<typename THEN> struct _If<False, THEN>
-{
-    template<typename T> using ret = T;
+    template<typename ARGS> struct Func;
+
+    template<typename THEN, typename ELSE>
+    struct Func<List<True, THEN, ELSE>>
+    {
+        using ret = THEN;
+    };
+
+    template<typename THEN, typename ELSE>
+    struct Func<List<False, THEN, ELSE>>
+    {
+        using ret = ELSE;
+    };
 };
 
 //Ifs和Switch仅可用于g++，我也不知道为什么
@@ -55,7 +113,7 @@ template<typename THEN> struct _If<False, THEN>
 //若没有传入ELSE，则在所有条件均不成立的情况下返回Null
 //Ifs(THEN1,cond1,THEN2,cond2,...,ELSE)
 #define Ifs(...) Ret(_Ifs,__VA_ARGS__)
-template<typename THEN = Null, typename cond = True, typename...Tcs> struct _Ifs
+template<typename THEN, typename cond = True, typename...Tcs> struct _Ifs
 {
     using ret = If(cond, THEN, Ifs(Tcs...));
 };
@@ -82,7 +140,7 @@ template<
     template<typename Context> typename LoopFunc,
     typename Context,
     template<typename Index> typename StopBy,
-    template<typename Index> typename doToIndex = _Inc,
+    template<typename Index> typename doToIndex = _Inc::Func,//_Inc
     typename Index = Int<0>> struct _For
     // 注意声明形参的顺序，如果模板模板参数的参数与其它参数重名则必须
     // 首先声明模板模板参数. 如本函数中的StopBy和doToIndex必须在

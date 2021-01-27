@@ -17,24 +17,24 @@ struct __Line_;
 template <typename T, int LINE>
 struct __CastAndBind
 {
-    using ret = Cons<Arg(Value(T)), __Line_<LINE>>;
+    using ret = List<Arg(Value(T)), __Line_<LINE>>;
 };
 template <int LINE>
 struct __CastAndBind<True, LINE>
 {
-    using ret = Cons<True, __Line_<LINE>>;
+    using ret = List<True, __Line_<LINE>>;
 };
 template <int LINE>
 struct __CastAndBind<False, LINE>
 {
-    using ret = Cons<False, __Line_<LINE>>;
+    using ret = List<False, __Line_<LINE>>;
 };
-/*template<bool b, int LINE> struct __CastAndBind<Bool<b>, LINE> { using ret = Cons<Bool<b>, __Line_<LINE>>; };*/
-template <int LINE>
-struct __CastAndBind<Null, LINE>
-{
-    using ret = Cons<Null, __Line_<LINE>>;
-};
+
+//template <int LINE>
+//struct __CastAndBind<Null, LINE>
+//{
+//    using ret = List<Null, __Line_<LINE>>;
+//};
 
 // #define __LetterTypeGenerator(letter) using letter = Arg(#@letter)
 // 已弃用. 因为仅MSVC支持#@
@@ -103,7 +103,7 @@ struct Letter__
     template <int LINE>                                   \
     struct __CastAndBind<Letter__::letter, LINE>          \
     {                                                     \
-        using ret = Cons<Letter__::letter, __Line_<LINE>>; \
+        using ret = List<Letter__::letter, __Line_<LINE>>; \
     }
 
 #pragma region LowerCase

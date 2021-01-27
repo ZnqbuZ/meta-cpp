@@ -8,13 +8,6 @@
 //有时可能遇到Ret嵌套，这将导致两个以上typename叠加. 这时使用RawRet
 #define RawRet(func,...) func<__VA_ARGS__>::ret
 
-#define Type(...) Ret(_getType,__VA_ARGS__)
-template<typename T> struct _getType { using ret = typename T::__type; };
-
-//不能使用auto，否则输出将无法正确读取类型名
-#define Value(...) _getValue<__VA_ARGS__>::ret
-template<typename T> struct _getValue { static constexpr Type(T) ret = T::__value; };
-
 //不允许类型嵌套，如IntType<IntType<1>>
 template<typename T, T value> struct Arg__
 {
@@ -24,16 +17,36 @@ template<typename T, T value> struct Arg__
 
 //MSVC将__VA_ARGS__看做为一个参数整体，所以必须加中间层__Expand
 #define __Expand(...)                           __VA_ARGS__
-#define __UntypedArg(value)                     Arg__<std::decay_t<decltype(value)>,value>
+//#define __UntypedArg(value)                     Arg__<std::decay_t<decltype(value)>,value>
 #define __TypedArg(type,value)                  Arg__<type,value>
-#define __FIND_THIRD_ARG(arg1,arg2,arg3,...)    arg3
+#define __UntypedArg(value)                     __TypedArg(std::decay_t<decltype(value)>,value)
+#define __FIND_3RD_ARG(arg1,arg2,arg3,...)      arg3
 //用于创建新变量，可省略类型说明
 //Arg(optional type, value)
 #define Arg(...)                                __Expand(\
                                                     __Expand(\
-                                                        __FIND_THIRD_ARG(\
+                                                        __FIND_3RD_ARG(\
                                                             __VA_ARGS__,__TypedArg,__UntypedArg))\
                                                     (__VA_ARGS__))
+
+#define Type(...) Ret(_getType::template Func,__VA_ARGS__)//Ret(_getType,__VA_ARGS__)
+//template<typename T> struct _getType { using ret = typename T::__type; };
+struct _getType
+{
+    template<typename T> struct Func;
+    template<typename U, U value>
+    struct Func<Arg(U, value)> { using ret = U; };
+};
+
+//不能使用auto，否则输出将无法正确读取类型名
+#define Value(...) RawRet(_getValue::template Func,__VA_ARGS__)//_getValue<__VA_ARGS__>::ret
+struct _getValue
+{
+    template<typename T> struct Func;
+    template<typename U, U value>
+    struct Func<Arg(U, value)> { static constexpr U ret = value; };
+};
+
 // #define IntType(N)          Arg(int,N)
 // #define BoolType(b)         Arg(bool,b)
 // #define CharType(ch)        Arg(char,ch)
@@ -49,4 +62,4 @@ template<char ch>   using Char = Arg__<char, ch>;
 using True = Bool<true>;
 using False = Bool<false>;
 
-struct Null;
+//struct Null;

@@ -5,8 +5,8 @@
 #include "outmsg.h"
 #include "arith.h"
 #include "pair.h"
-#include "algor.h"
-#include "stream.h"
+//#include "algor.h"
+//#include "stream.h"
 #include <type_traits>
 
 #pragma region ½×³Ë
@@ -24,25 +24,32 @@ struct factorial<Int<0>>
 };
 #pragma endregion
 
-#pragma region Ä£°åÄ£°å²ÎÊý
-template <
-    template <typename... Types> typename myTemp>
-struct TestTemp
+template<typename T> struct is_prime;
+template<int n> struct is_prime<Int<n>>
 {
-    template <typename... Types>
-    using ret = myTemp<Types...>;
-};
+    template<typename U> struct loop;
+    template<int i>
+    struct loop<Int<i>>
+    {
+        using ret = And(
+            Not(IsEqual(Mod(Int<n>, Int<i>), Int<0>)),
+            Ret(loop, Inc(Int<i>)));
+    };
 
-template <
-    template <
-    template <typename... Types> typename myTempTemp>
-typename myTemp>
-struct TestTemp2
-{
-    template <template <typename... Types> typename myTempTemp>
-    using ret = myTemp<myTempTemp>;
+    template<>
+    struct loop<Div(Int<n>, Int<2>)>
+    {
+        using ret = Not(IsEqual(Mod(Int<n>, Int<2>), Int<0>));
+    };
+
+    template<>
+    struct loop<Int<n>>
+    {
+        using ret = True;
+    };
+
+    using ret = Ret(loop, Int<2>);
 };
-#pragma endregion
 
 #pragma region Ñ­»·²âÊÔ
 
@@ -105,6 +112,14 @@ constexpr int init(Types... args)
     //using mycons = Cons<Int<1>>;
     //Format(Car(mycons));
     //Format(Cdr(mycons));
+
+    //using my_cons =
+    //    Cons<
+    //    Cons<Int<1>, Int<2>>,
+    //    Cons<Int<3>,
+    //    Cons<Int<5>, Int<9>>>>;
+
+    //CONS_MAP<_Inc>::on<my_cons>::ret;
 #pragma endregion
 
 #pragma region Âß¼­ÔËËã²âÊÔ
@@ -129,25 +144,61 @@ constexpr int init(Types... args)
     //    Xor(Arg(125), Arg(234)));
 #pragma endregion
 
-    Format(STREAM_CAR(evens));
-    Format(STREAM_CAR(STREAM_CDR(evens)));
+#pragma region Á÷²âÊÔ
+    //Format(STREAM_CAR(evens));
+    //Format(STREAM_CAR(STREAM_CDR(evens)));
 
-    Format(STREAM_CAR(odds));
-    Format(STREAM_CAR(STREAM_CDR(odds)));
+    //Format(STREAM_CAR(odds));
+    //Format(STREAM_CAR(STREAM_CDR(odds)));
 
-    Format(STREAM_CAR(integers));
-    Format(STREAM_CAR(STREAM_CDR(integers)));
-    STREAM_CDR(integers);
+    //Format(STREAM_CAR(integers));
+    //Format(STREAM_CAR(STREAM_CDR(integers)));
+    //STREAM_CDR(integers);
+#pragma endregion
 
-    using my_cons =
-        Cons<
-        Cons<Int<1>, Int<2>>,
-        Cons<Int<3>,
-        Cons<Int<5>, Int<9>>>>;
+    //using primes =
+    //    STREAM_FILTER<is_prime>::on<inc_stream::starting_from<Int<2>>::ret>::ret;
+    //primes;
+    //STREAM_CDR(primes);
+    //STREAM_CDR(
+    //    STREAM_CDR(primes));
 
-    CONS_MAP<_Inc>::on<my_cons>::ret;
+    //Format(STREAM_CAR(primes));
+    //Format(STREAM_CAR(STREAM_CDR(primes)));
+    //Format(
+    //    STREAM_CAR(
+    //        STREAM_CDR(
+    //            STREAM_CDR(primes))));
 
-    //If(IsGreater(Int<1>, Int<0>), Int<3>, Int<4>);
+    //using my_cons
+    //    = MK_CONS_FUN<MK_CONS_PACK_ARGS<_Inc, _Dec>>::ret;
+
+    //Format(Car(my_cons)::Func<Int<1>>);
+
+    using my_list = List<Int<1>, Int<2>, Int<3>, Char<'a'>, Char<'b'>>;
+    //my_list;
+    //Map::Func<List<_Inc, my_list>>::ret;
+
+    using my_list2 =
+        List<
+        List<
+        List<List<Int<7>>, List<Int<11>, Int<12>>, Int<6>>,
+        Int<1>,
+        Int<2>
+        >,
+        List<
+        Int<2>,
+        List<Int<1>, Int<3>>
+        >
+        >;
+
+    Flatten::Func<my_list2>::ret;
+
+    DeepMap::Func<List<_Inc, my_list2>>::ret;
+
+    //Merge::Func<my_list2>::ret;
+    //Flatten::Func<my_list2>::ret;
+
     return 0;
 }
 
