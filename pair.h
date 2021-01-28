@@ -143,30 +143,46 @@ struct Union
     };
 };
 
+#define FUNC_HEAD(name)\
+template<typename arg_list> struct Func {\
+struct ERROR_ARG_LIST_UNIDENTIFIED;\
+arg_list::___________________________\
+Unidentified____Argument____List____of____##name##\
+____________________________________________________; \
+using ret = ERROR_ARG_LIST_UNIDENTIFIED;\
+}
+
+#define DEFN_FUNCTION(name,...)\
+struct name\
+{\
+    FUNC_HEAD(name);\
+    __VA_ARGS__\
+};
+
 struct Merge
 {
-    template<typename args> struct Func;
+    FUNC_HEAD(Merge);
 
     template<typename...Ts, typename...Vs>
-    struct Func<List<List<Ts...>, Vs...>>
+    struct Func<List<List<List<Ts...>, Vs...>>>
     {
         using ret =
             Ret(Union::template Func, List<
                 List<Ts...>,
-                Ret(Func, List<Vs...>)>);
+                Ret(Merge::template Func, List<List<Vs...>>)>);
     };
 
     template<typename T, typename...Vs>
-    struct Func<List<T, Vs...>>
+    struct Func<List<List<T, Vs...>>>
     {
         using ret =
             Ret(Union::template Func, List<
                 List<T>,
-                Ret(Func, List<Vs...>)>);
+                Ret(Merge::template Func, List<List<Vs...>>)>);
     };
 
     template<>
-    struct Func<List<>>
+    struct Func<List<List<>>>
     {
         using ret = List<>;
     };
@@ -174,24 +190,24 @@ struct Merge
 
 struct Flatten
 {
-    template<typename args> struct Func;
+    template<typename arg_list> struct Func;
 
     template<typename...Ts, typename...Vs>
     struct Func<List<List<Ts...>, Vs...>>
     {
-        using ret = Ret(Flatten::template Func, List<Ts..., Vs...>);
+        using ret = Ret(Flatten::template Func, List<List<Ts..., Vs...>>);
     };
 
     template<typename...Ts>
     struct Func<List<List<Ts...>>>
     {
-        using ret = Ret(Flatten::template Func, List<Ts...>);
+        using ret = Ret(Flatten::template Func, List<List<Ts...>>);
     };
 
     template<typename T, typename...Vs>
     struct Func<List<T, Vs...>>
     {
-        using ret = Ret(Merge::template Func, List<List<T>, Ret(Func, List<Vs...>)>);
+        using ret = Ret(Merge::template Func, List<List<T>, Ret(Func, List<List<Vs...>>)>);
     };
 
     template<typename T>
@@ -209,7 +225,7 @@ struct Map
     {
         struct On
         {
-            template<typename args> struct Func;
+            template<typename arg_list> struct Func;
 
             template<typename T>
             struct Func<List<List<T>>>
@@ -241,13 +257,14 @@ struct Map
 
 struct DeepMap
 {
-    template<typename args> struct Func;
+    FUNC_HEAD(DeepMap);
+
     template<typename F, typename...items>
     struct Func<List<F, List<items...>>>
     {
         struct On
         {
-            template<typename args> struct Func;
+            template<typename arg_list> struct Func;
 
             template<typename T>
             struct Func<List<T>>
@@ -274,3 +291,5 @@ struct DeepMap
         using ret = Ret(On::template Func, List<List<items...>>);
     };
 };
+
+// ø…”√MapºÚªØDeepMap£ø

@@ -8,7 +8,7 @@
 //#define MK_STREAM(NAME, NEXT) \
 //template<typename T> struct NAME##_starting_from\
 //{\
-//    using ret= Cons<Arg(Value(T)), NAME##_starting_from<NEXT(T)>>;\
+//    using ret= Cons<ARG(Value(T)), NAME##_starting_from<NEXT(T)>>;\
 //}
 
 //#define GET_STREAM(NAME, HEAD) Ret(NAME##_starting_from, HEAD)
@@ -19,7 +19,7 @@ struct MK_STREAM
 {
     template<typename HEAD> struct starting_from
     {
-        using ret = Cons<Arg(Value(HEAD)), starting_from<NEXT<HEAD>>>;//Ret(NEXT, HEAD)
+        using ret = Cons<ARG(Value(HEAD)), starting_from<NEXT<HEAD>>>;//Ret(NEXT, HEAD)
     };
 };
 
@@ -32,7 +32,7 @@ struct STREAM_MAP
         using curr = STREAM_CAR(typename stream);
         using res = STREAM_CDR(typename stream);
         using ret = Cons<
-            Arg(Value(F<curr>)),//Ret(F,curr)
+            ARG(Value(F<curr>)),//Ret(F,curr)
             on<res>>;
     };
 };

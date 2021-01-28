@@ -4,29 +4,22 @@
 #include "pair.h"
 
 // 复合函数
-//template<
-//    typename f,
-//    typename g,
-//    typename T>
-//    struct composition
-//{
-//    using ret = f::Func<g::Func<T>>;//是否需要加template？
-//};
-
 struct compose
 {
-    template<typename ARGS> struct Func;
+    template<typename arg_list> struct Func;
 
     template<typename T, typename V>
     struct Func<List<T, V>>
     {
-        template<typename U> using ret = Ret(T::template Func, Ret(V::template Func, U));//是否需要加template？
+        struct ret
+        {
+            template<typename arg_list> struct Func
+            {
+                using ret = Ret(T::template Func, List<Ret(V::template Func, arg_list)>);
+            };
+        };
     };
 };
-
-//#define IsEqual(...) Ret(_isEqual,__VA_ARGS__)
-//template<typename T, typename V> struct _isEqual { using ret = False; };
-//template<typename T> struct _isEqual<T, T> { using ret = True; };
 
 #define IsEqual(...) Ret(_isEqual::Func, List<__VA_ARGS__>)
 struct _isEqual
@@ -40,18 +33,18 @@ struct _isEqual
     struct Func<List<T, T>> { using ret = True; };
 };
 
-DEFN_BINARY_FUN(bool, isValueEqual, x, y, (x == y));
-DEFN_BINARY_FUN(bool, isGreater, x, y, (x > y));
-DEFN_BINARY_FUN(bool, isLess, x, y, (x < y));
+DEFN_BINARY_FUN(isValueEqual, x, y, bool, (Value(x) == Value(y)));
+DEFN_BINARY_FUN(isGreater, x, y, bool, (Value(x) > Value(y)));
+DEFN_BINARY_FUN(isLess, x, y, bool, (Value(x) < Value(y)));
 #define IsValueEqual(...)   Ret(_isValueEqual::Func, List<__VA_ARGS__>)
 #define IsGreater(...)      Ret(_isGreater::Func, List<__VA_ARGS__>)
 #define IsLess(...)         Ret(_isLess::Func, List<__VA_ARGS__>)
 
 //#define IsGreater(...) Ret(_isGreater,__VA_ARGS__)
-//template<typename T, typename V> struct _isGreater { using ret = Arg(bool, (Value(T) > Value(V))); };
+//template<typename T, typename V> struct _isGreater { using ret = ARG(bool, (Value(T) > Value(V))); };
 //
 //#define IsLess(...) Ret(_isLess,__VA_ARGS__)
-//template<typename T, typename V> struct _isLess { using ret = Arg(bool, (Value(T) < Value(V))); };
+//template<typename T, typename V> struct _isLess { using ret = ARG(bool, (Value(T) < Value(V))); };
 
 #define IsGreaterEqual(...) Not(IsLess(__VA_ARGS__))
 #define IsLessEqual(...) Not(IsGreater(__VA_ARGS__))

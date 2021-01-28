@@ -1,11 +1,9 @@
-// Scheme_In_Templates.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
 #include <stdio.h>
 #include "typesdef.h"
 #include "outmsg.h"
 #include "arith.h"
 #include "pair.h"
-//#include "algor.h"
+#include "algor.h"
 //#include "stream.h"
 #include <type_traits>
 
@@ -78,73 +76,62 @@ template <typename... Types>
 constexpr int init(Types... args)
 {
 #pragma region 算术运算测试
-    //Format(
-    //    Add(Arg('e'), Arg(int, 5)));
-    //
-    //Format(
-    //    Mul(Arg('e'), Arg(int, 5)));
-    //
-    //Format(
-    //    Inc(Arg('a')));
+    //Display(Formatted(
+    //    Add(ARG(6), ARG(int, 5))));
+    //Display(Formatted(
+    //    Sub(ARG(7), ARG(int, 2))));
+    //Display(Formatted(
+    //    Mul(ARG(7), ARG(int, 2))));
+    //Display(Formatted(
+    //    Div(ARG(7), ARG(int, 2))));
+    //Display(Formatted(
+    //    Mod(ARG(7), ARG(int, 2))));
+    //Display(Formatted(
+    //    Add(ARG('e'), ARG(int, 5))));
+    //Display(Formatted(
+    //    Mul(ARG('0'), ARG(int, 2))));
+    //Display(Formatted(
+    //    Inc(ARG('a'))));
+#pragma endregion
+#pragma region 位运算测试
+    //Display(Formatted(
+    //    ARG(true)));
+    //Display(Formatted(
+    //    IsGreater(ARG(int, 5), ARG('e'))));
+    //Display(Formatted(
+    //    And(ARG(125), ARG(234))));
+    //Display(Formatted(
+    //    Or(ARG(125), ARG(234))));
+    //Display(Formatted(
+    //    Not(ARG(125))));
+    //Display(Formatted(
+    //    Not(ARG(true))));
+    //Display(Formatted(
+    //    Xor(ARG(125), ARG(234))));
 #pragma endregion
 
 #pragma region 选择结构测试
     //Format(
-    //    If(IsEqual(Arg(1), Arg(0)),
+    //    If(IsEqual(ARG(1), ARG(0)),
     //        True,
     //        False));
 
     //Format(
-    //    Ifs(Arg(1), IsEqual(Arg(1), Arg(0)),
-    //        Arg(2), IsEqual(Arg(1), Arg(6))));
+    //    Ifs(ARG(1), IsEqual(ARG(1), ARG(0)),
+    //        ARG(2), IsEqual(ARG(1), ARG(6))));
 
     //Ifs(
-    //    Arg(1), IsEqual(Arg(1), Arg(0)),
-    //    Arg(2), IsEqual(Arg(1), Arg(6)),
-    //    Format(Arg(3)));
+    //    ARG(1), IsEqual(ARG(1), ARG(0)),
+    //    ARG(2), IsEqual(ARG(1), ARG(6)),
+    //    Format(ARG(3)));
 
     //Format(
-    //    Switch(Arg(1),
-    //        Arg(2), Arg(2),
-    //        Arg(3), Arg(3),
-    //        Arg(1)));
+    //    Switch(ARG(1),
+    //        ARG(2), ARG(2),
+    //        ARG(3), ARG(3),
+    //        ARG(1)));
 #pragma endregion
 
-#pragma region 序对测试
-    //using mycons = Cons<Int<1>>;
-    //Format(Car(mycons));
-    //Format(Cdr(mycons));
-
-    //using my_cons =
-    //    Cons<
-    //    Cons<Int<1>, Int<2>>,
-    //    Cons<Int<3>,
-    //    Cons<Int<5>, Int<9>>>>;
-
-    //CONS_MAP<_Inc>::on<my_cons>::ret;
-#pragma endregion
-
-#pragma region 逻辑运算测试
-    //Format(Arg(true));
-
-    //Format(
-    //    IsGreater(Arg(int, 5), Arg('e')));
-
-    //Format(
-    //    And(Arg(125), Arg(234)));
-
-    //Format(
-    //    Or(Arg(125), Arg(234)));
-
-    //Format(
-    //    Not(Arg(125)));
-
-    //Format(
-    //    Not(Arg(true)));
-
-    //Format(
-    //    Xor(Arg(125), Arg(234)));
-#pragma endregion
 
 #pragma region 流测试
     //Format(STREAM_CAR(evens));
@@ -175,14 +162,16 @@ constexpr int init(Types... args)
     //using my_cons
     //    = MK_CONS_FUN<MK_CONS_PACK_ARGS<_Inc, _Dec>>::ret;
 
-    //Format(Car(my_cons)::Func<Int<1>>);
-
+#pragma region 表测试
     using my_list = List<
         List<Int<1>, Int<2>>,
         List<Int<3>, Char<'a'>>,
         List<Char<'b'>, False>>;
     //my_list;
-    //Map::Func<List<_Inc, my_list>>::ret;
+    Display(DeepMap::template Func<List<
+        typename compose::template Func<List<Format, _Inc>>::ret,
+        my_list>
+    >::ret);
 
     using my_list2 =
         List<
@@ -201,18 +190,19 @@ constexpr int init(Types... args)
 
     //Ret(DeepMap::Func, List<_Inc, my_list2>);
 
-    using swaped_my_list = Ret(Map::Func, List<Swap, my_list>);
+    using swaped_my_list = Ret(Map::template Func, List<Swap, my_list>);
     //swaped_my_list;
 
-    Ret(DeepMap::Func, List<Format, swaped_my_list>);
+    //Ret(DeepMap::Func, List<Format, swaped_my_list>);
 
     //Ret(DeepMap::template Func, List<Format, swaped_my_list>);
 
     //Ret(Format::Func, List<IsGreater(Int<5>, Int<6>)>);
     //Ret(Format::Func, List<Add(Char<'1'>, Int<5>)>);
 
-    //Merge::Func<my_list2>::ret;
+    Display(Ret(DeepMap::template Func, List<Format, Merge::Func<List<my_list>>::ret>));
     //Flatten::Func<my_list2>::ret;
+#pragma endregion
 
     return 0;
 }
@@ -221,14 +211,3 @@ int main()
 {
     static_assert(init() != 0, "init end.");
 }
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧:
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
