@@ -99,22 +99,38 @@ template<typename T, typename V = Null> struct Cons
 //};
 
 template<typename...items> struct List;
+
 template<typename __car, typename...__cdr>
 struct List<__car, __cdr...>
 {
     using car = __car;
     using cdr = List<__cdr...>;
 };
+
 template<typename __car, typename __cdr>
 struct List<__car, __cdr>
 {
     using car = __car;
     using cdr = __cdr;
 };
+
+template<typename __car, typename __cdr>
+using Cons = List<__car, __cdr>;
+
 template<typename __car>
 struct List<__car>
 {
     using car = __car;
+};
+
+struct Swap
+{
+    template<typename args> struct Func;
+    template<typename __car, typename __cdr>
+    struct Func<List<Cons<__car, __cdr>>>
+    {
+        using ret = Cons<__cdr, __car>;
+    };
 };
 
 struct Union
@@ -135,7 +151,7 @@ struct Merge
     struct Func<List<List<Ts...>, Vs...>>
     {
         using ret =
-            Ret(Union::Func, List<
+            Ret(Union::template Func, List<
                 List<Ts...>,
                 Ret(Func, List<Vs...>)>);
     };
@@ -144,7 +160,7 @@ struct Merge
     struct Func<List<T, Vs...>>
     {
         using ret =
-            Ret(Union::Func, List<
+            Ret(Union::template Func, List<
                 List<T>,
                 Ret(Func, List<Vs...>)>);
     };
@@ -163,23 +179,19 @@ struct Flatten
     template<typename...Ts, typename...Vs>
     struct Func<List<List<Ts...>, Vs...>>
     {
-        using ret = typename Func<List<Ts..., Vs...>>::ret;
+        using ret = Ret(Flatten::template Func, List<Ts..., Vs...>);
     };
 
     template<typename...Ts>
     struct Func<List<List<Ts...>>>
     {
-        using ret = typename Func<List<Ts...>>::ret;
+        using ret = Ret(Flatten::template Func, List<Ts...>);
     };
 
     template<typename T, typename...Vs>
     struct Func<List<T, Vs...>>
     {
-        using ret =
-            typename Merge::Func<List<
-            List<T>,
-            typename Func<List<Vs...>>::ret
-            >>::ret;
+        using ret = Ret(Merge::template Func, List<List<T>, Ret(Func, List<Vs...>)>);
     };
 
     template<typename T>
@@ -195,33 +207,35 @@ struct Map
     template<typename F, typename...items>
     struct Func<List<F, List<items...>>>
     {
-        template<typename T> struct MapOn;
-
-        template<typename T>
-        struct MapOn<List<T>>
+        struct On
         {
-            using ret = List<
-                Ret(F::template Func, List<T>)>;
+            template<typename args> struct Func;
+
+            template<typename T>
+            struct Func<List<List<T>>>
+            {
+                using ret = List<
+                    Ret(F::template Func, List<T>)>;
+            };
+
+            template<typename T, typename V>
+            struct Func<List<List<T, V>>>
+            {
+                using ret = List<
+                    Ret(F::template Func, List<T>),
+                    Ret(F::template Func, List<V>)>;
+            };
+
+            template<typename T, typename...Ts>
+            struct Func<List<List<T, Ts...>>>
+            {
+                using ret = Ret(Union::template Func, List<
+                    List<Ret(F::template Func, List<T>)>,
+                    Ret(On::template Func, List<List<Ts...>>)>);
+            };
         };
 
-        template<typename T, typename V>
-        struct MapOn<List<T, V>>
-        {
-            using ret = List<
-                Ret(F::template Func, List<T>),
-                Ret(F::template Func, List<V>)>;
-        };
-
-        template<typename T, typename...Ts>
-        struct MapOn<List<T, Ts...>>
-        {
-            using L = List<Ts...>;
-            using ret = typename Flatten::Func<List<
-                Ret(F::template Func, List<T>),
-                Ret(MapOn, L)>>::ret;
-        };
-
-        using ret = Ret(MapOn, List<items...>);
+        using ret = Ret(On::template Func, List<List<items...>>);
     };
 };
 
@@ -231,28 +245,32 @@ struct DeepMap
     template<typename F, typename...items>
     struct Func<List<F, List<items...>>>
     {
-        template<typename T> struct MapOn
+        struct On
         {
-            using ret = Ret(F::template Func, List<T>);
+            template<typename args> struct Func;
+
+            template<typename T>
+            struct Func<List<T>>
+            {
+                using ret = Ret(F::template Func, List<T>);
+            };
+
+            template<typename T>
+            struct Func<List<List<T>>>
+            {
+                using ret = List<Ret(On::template Func, List<T>)>;
+            };
+
+            template<typename T, typename...Ts>
+            struct Func<List<List<T, Ts...>>>
+            {
+                using ret =
+                    Ret(Union::template Func, List<
+                        List<Ret(On::template Func, List<T>)>,
+                        Ret(On::template Func, List<List<Ts...>>)>);
+            };
         };
 
-        template<typename T>
-        struct MapOn<List<T>>
-        {
-            using ret = List<Ret(MapOn, T)>;
-        };
-
-        template<typename T, typename...Ts>
-        struct MapOn<List<T, Ts...>>
-        {
-            using L = List<Ts...>;
-
-            using ret =
-                Ret(Union::Func, List<
-                    List<Ret(MapOn, T)>,
-                    Ret(MapOn, L)>);
-        };
-
-        using ret = Ret(MapOn, List<items...>);
+        using ret = Ret(On::template Func, List<List<items...>>);
     };
 };

@@ -5,7 +5,7 @@
 #define __DEFN_TYPED_UNARY_FUN(type,name,arg,expr)          \
 struct _##name                                              \
 {                                                           \
-    template<typename ARGS> struct Func;                    \
+    template<typename args> struct Func;                    \
     template<typename T, T arg>                             \
     struct Func<List<Arg(T, arg)>>                          \
     {                                                       \
@@ -30,7 +30,7 @@ struct _##name                                              \
 #define __DEFN_TYPED_BINARY_FUN(type,name,arg1,arg2,expr)   \
 struct _##name                                              \
 {                                                           \
-    template<typename ARGS> struct Func;                    \
+    template<typename args> struct Func;                    \
     template<                                               \
         typename T, T arg1,                                 \
         typename V, V arg2>                                 \

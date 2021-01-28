@@ -72,6 +72,8 @@ struct LoopFunc
 };
 #pragma endregion
 
+template<typename T> struct Display;
+
 template <typename... Types>
 constexpr int init(Types... args)
 {
@@ -175,7 +177,10 @@ constexpr int init(Types... args)
 
     //Format(Car(my_cons)::Func<Int<1>>);
 
-    using my_list = List<Int<1>, Int<2>, Int<3>, Char<'a'>, Char<'b'>>;
+    using my_list = List<
+        List<Int<1>, Int<2>>,
+        List<Int<3>, Char<'a'>>,
+        List<Char<'b'>, False>>;
     //my_list;
     //Map::Func<List<_Inc, my_list>>::ret;
 
@@ -192,9 +197,19 @@ constexpr int init(Types... args)
         >
         >;
 
-    Flatten::Func<my_list2>::ret;
+    //Ret(Flatten::Func, List<my_list2>);
 
-    DeepMap::Func<List<_Inc, my_list2>>::ret;
+    //Ret(DeepMap::Func, List<_Inc, my_list2>);
+
+    using swaped_my_list = Ret(Map::Func, List<Swap, my_list>);
+    //swaped_my_list;
+
+    Ret(DeepMap::Func, List<Format, swaped_my_list>);
+
+    //Ret(DeepMap::template Func, List<Format, swaped_my_list>);
+
+    //Ret(Format::Func, List<IsGreater(Int<5>, Int<6>)>);
+    //Ret(Format::Func, List<Add(Char<'1'>, Int<5>)>);
 
     //Merge::Func<my_list2>::ret;
     //Flatten::Func<my_list2>::ret;
