@@ -4,19 +4,19 @@
 
 #pragma region 皮亚诺运算
 
-DEFN_UNARY_FUN(Inc, x, Value(x) + 1);
-DEFN_UNARY_FUN(Neg, x, -Value(x));
+DEFN_UNARY_FUN(Inc, x, A(Value(x) + 1));
+DEFN_UNARY_FUN(Neg, x, A(-Value(x)));
 using Dec = C(Neg, Inc, Neg);
 
 #pragma endregion
 
 #pragma region 四则运算
 
-DEFN_BINARY_FUN(Add, x, y, Value(x) + Value(y));
-DEFN_BINARY_FUN(Sub, x, y, Value(x) - Value(y));
-DEFN_BINARY_FUN(Mul, x, y, Value(x)* Value(y));
-DEFN_BINARY_FUN(Div, x, y, Value(x) / Value(y));
-DEFN_BINARY_FUN(Mod, x, y, Value(x) % Value(y));
+DEFN_BINARY_FUN(Add, x, y, A(Value(x) + Value(y)));
+DEFN_BINARY_FUN(Sub, x, y, A(Value(x) - Value(y)));
+DEFN_BINARY_FUN(Mul, x, y, A(Value(x)* Value(y)));
+DEFN_BINARY_FUN(Div, x, y, A(Value(x) / Value(y)));
+DEFN_BINARY_FUN(Mod, x, y, A(Value(x) % Value(y)));
 
 #pragma endregion
 
@@ -24,16 +24,16 @@ DEFN_BINARY_FUN(Mod, x, y, Value(x) % Value(y));
 
 // 懒得为逻辑运算单独优化了
 
-DEFN_BINARY_FUN(And, x, y, Value(x)& Value(y));
-DEFN_BINARY_FUN(Or, x, y, Value(x) | Value(y));
+DEFN_BINARY_FUN(And, x, y, A(Value(x)& Value(y)));
+DEFN_BINARY_FUN(Or, x, y, A(Value(x) | Value(y)));
 // bool 如果用~会有警告
-DEFN_UNARY_FUN(Not, x, ~Value(x));
+DEFN_UNARY_FUN(Not, x, A(~Value(x)));
 template<is::bool_type var>
 struct Not::apply_on<var>
 {
-    using ret = A(!Value(var), Type(var));
+    using ret = A(!Value(var));
 };
-DEFN_BINARY_FUN(Xor, x, y, Value(x) ^ Value(y));
+DEFN_BINARY_FUN(Xor, x, y, A(Value(x) ^ Value(y)));
 using NAnd = C(Not, And);
 using NOr = C(Not, Or);
 

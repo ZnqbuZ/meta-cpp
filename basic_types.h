@@ -69,7 +69,7 @@ struct name                                     \
     using __type = type;                        \
     constexpr static __type __value = value;    \
                                                 \
-    template<typename T>                        \
+    template<typename arg_list>                 \
     struct apply_on                             \
     {                                           \
         using ret = self;                       \
@@ -167,7 +167,9 @@ namespace chars
 };
 
 template<typename, typename, typename...>
-struct List;
+struct ListBase;
+template<typename T1, typename T2, typename...Ts>
+struct List :public ListBase<T1, T2, Ts...> {};
 #define L(...)      List<__VA_ARGS__>
 
 // 不能在delayed中检测f是否是函数，如果f中有无终止条件的递归（如流）将检测失败
@@ -178,7 +180,7 @@ struct delayed;
 namespace is {
     template<typename T>
     concept function =
-        requires { typename T::template apply_on<void>::ret; };
+        requires { typename T::template apply_on<Int<0>>::ret; };
 
     template<typename T>
     concept arg =
@@ -429,19 +431,6 @@ using Bool = A(b);
 template<char c>
 using Char = A(c);
 
-template<typename T1, typename T2, typename...Ts>
-struct List
-{
-    using __length = Int<2 + sizeof...(Ts)>;
-};
-
-template<typename f, typename...args>
-struct delayed
-{
-    using __func = f;
-    using __args = P(args...);
-};
-
 struct id
 {
     template<typename T>
@@ -455,6 +444,78 @@ struct id
     {
         using ret = get::ret<T, void>;
     };
+};
+
+template<typename T1, typename T2, typename...Ts>
+struct ListBase
+{
+    using __length = Int<2 + sizeof...(Ts)>;
+    struct push_front {
+        template<typename T>struct apply_on {
+            using ret = L(Id(T), Id(T1), Id(T2), Ts...);
+        };
+    };
+    struct push_back {
+        template<typename T>struct apply_on {
+            using ret = L(Id(T1), Id(T2), Ts..., Id(T));
+        };
+    };
+    struct peek_front {
+        template<typename T>struct apply_on {
+            using ret = Id(T1);
+        };
+    };
+    struct peek_back {
+        template<typename T>struct apply_on {
+            using ret = decltype(Id(T1) {}, ((Id(T2) {}), ..., (Id(Ts) {})));
+        };
+    };
+    struct pop_front {
+        template<typename T>struct apply_on {
+            using ret = P(Id(T2), Ts...);
+        };
+    };
+private:
+    template<typename...>
+    struct discard_last;
+    template<typename T1, typename T2, typename T3, typename...Ts>
+    struct discard_last<T1, T2, T3, Ts...>
+    {
+        using ret = Ret(typename discard_last<T2, T3, Ts...>::ret::push_front, Id(T1));
+    };
+    template<typename T1, typename T2, typename T3>
+    struct discard_last<T1, T2, T3>
+    {
+        using ret = L(Id(T1), Id(T2));
+    };
+    template<typename T1, typename T2>
+    struct discard_last<T1, T2>
+    {
+        using ret = Id(T1);
+    };
+public:
+    struct pop_back {
+        template<typename T>struct apply_on {
+            using ret = typename discard_last<T1, T2, Ts...>::ret;
+        };
+    };
+};
+
+template<is::function T1, is::function T2, is::function...Ts>
+struct List<T1, T2, Ts...> :public ListBase<T1, T2, Ts...>
+{
+    template<typename arg_list>
+    struct apply_on
+    {
+        using ret = L(Ret(T1, arg_list), Ret(T2, arg_list), Ret(Ts, arg_list)...);
+    };
+};
+
+template<typename f, typename...args>
+struct delayed
+{
+    using __func = f;
+    using __args = P(args...);
 };
 
 #define C(...)      Ret(compose,__VA_ARGS__)
@@ -498,37 +559,24 @@ struct cast
     requires(is::castable<arg, T>)
         struct apply_on<L(arg, T)>
     {
-        using ret = A((Type(arg))Value(arg), Id(T));
+        using ret = A((T)Value(arg), Id(T));
     };
 };
 
 #pragma region Simple Function Generators
 
-#define __DEFN_TYPED_UNARY_FUN(name,var,ret_type,expr)          \
+#define DEFN_UNARY_FUN(name,var,expr)                           \
 struct name                                                     \
 {                                                               \
     FUNC_HEAD_THROW(name);                                      \
     template<is::arg var>                                       \
     struct apply_on<var>                                        \
     {                                                           \
-        using ret = A(expr, ret_type);                          \
+        using ret = expr;                                       \
     };                                                          \
 }
 
-#define __DEFN_UNTYPED_UNARY_FUN(name,var,expr)                 \
-        __DEFN_TYPED_UNARY_FUN(                                 \
-            name,var,Type(var),expr)
-
-#define DEFN_UNARY_FUN(...)                                     \
-        __EXPAND(                                               \
-            __EXPAND(                                           \
-                __FIND_5TH_ARG(                                 \
-                    __VA_ARGS__,                                \
-                    __DEFN_TYPED_UNARY_FUN,                     \
-                    __DEFN_UNTYPED_UNARY_FUN))                  \
-            (__VA_ARGS__))
-
-#define __DEFN_TYPED_BINARY_FUN(name,var1,var2,ret_type,expr)   \
+#define DEFN_BINARY_FUN(name,var1,var2,expr)                    \
 struct name                                                     \
 {                                                               \
     FUNC_HEAD_THROW(name);                                      \
@@ -538,27 +586,14 @@ struct name                                                     \
         is::arg var2>                                           \
     struct apply_on<L(var1,var2)>                               \
     {                                                           \
-        using ret = A(expr, ret_type);                          \
+        using ret = expr;                                       \
     };                                                          \
 }
-
-#define __DEFN_UNTYPED_BINARY_FUN(name,var1,var2,expr)          \
-        __DEFN_TYPED_BINARY_FUN(                                \
-            name,var1,var2,Type(var1),expr)
-
-#define DEFN_BINARY_FUN(...)                                    \
-        __EXPAND(                                               \
-            __EXPAND(                                           \
-                __FIND_6TH_ARG(                                 \
-                    __VA_ARGS__,                                \
-                    __DEFN_TYPED_BINARY_FUN,                    \
-                    __DEFN_UNTYPED_BINARY_FUN))                 \
-            (__VA_ARGS__))
 #pragma endregion
 
-DEFN_BINARY_FUN(is_value_equal, x, y, bool, (Value(x) == Value(y)));
-DEFN_BINARY_FUN(is_greater, x, y, bool, (Value(x) > Value(y)));
-DEFN_BINARY_FUN(is_less, x, y, bool, (Value(x) < Value(y)));
+DEFN_BINARY_FUN(is_value_equal, x, y, A(Value(x) == Value(y), bool));
+DEFN_BINARY_FUN(is_greater, x, y, A((Value(x) > Value(y)), bool));
+DEFN_BINARY_FUN(is_less, x, y, A(Value(x) < Value(y), bool));
 
 #define Select(...) Ret(select,__VA_ARGS__)
 struct select
@@ -583,28 +618,5 @@ struct select
         struct apply_on<L(cond, THEN, ELSE)>
     {
         using ret = ELSE;
-    };
-};
-
-struct bind
-{
-    FUNC_HEAD_THROW(bind);
-
-    template<is::ford f, typename T, is::arg N>
-    struct apply_on<L(f, L(T, N))>
-    {
-        struct ret
-        {
-            template<typename V>
-            struct apply_on
-            {
-                using ret = Ret(f,
-                    Select(Ret(is_greater, N, A(0)),
-                        L(V, T),
-                        L(T, V)
-                    )
-                );
-            };
-        };
     };
 };

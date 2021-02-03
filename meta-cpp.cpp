@@ -42,78 +42,49 @@ L(
 using test_list_3 = Ret(push_back, L(L(A(4), A(5), A(7)), A(5)), test_list_2);
 #pragma endregion
 
-DEFN_UNARY_FUN(twice, x, 2 * Value(x));
-DEFN_UNARY_FUN(odd, x, Value(x) % 2);
+DEFN_UNARY_FUN(twice, x, A(2 * Value(x)));
+DEFN_UNARY_FUN(odd, x, A(Value(x) % 2));
 
-//#define ALGOR_TEST
+#define ALGOR_TEST
 
 #ifdef ALGOR_TEST
 
-Ret(peek_front, A(1));
-Ret(peek_front, test_list_1);
-Ret(pop_front, test_list_1);
-Ret(peek_back, test_list_1);
-Ret(pop_back, test_list_1);
+Ret(L(peek_back, peek_front), test_list_2);
+Ret(L(pop_back, pop_front), test_list_2);
 
-Ret(flatten, test_list_1);
 Ret(join, test_list_1, test_list_2);
 
-Ret(deep_map, Inc, test_list_1);
-Ret(deep_map, Neg, test_list_1);
-Ret(deep_map, Dec, test_list_1);
+Ret(deep_map, L(Inc, Neg, Dec), test_list_1);
 
 Ret(map, swap, test_list_2);
 
-Ret(map, Add, test_list_2);
-Ret(map, Sub, test_list_2);
-Ret(map, Mul, test_list_2);
-Ret(map, Div, test_list_2);
-Ret(map, Mod, test_list_2);
+Ret(map, L(Add, Sub, Mul, Div), test_list_2);
 
-Ret(map, And, test_list_2);
-Ret(map, Or, test_list_2);
-Ret(map, Xor, test_list_2);
+Ret(map, L(And, Or, Xor, NAnd, NOr), test_list_2);
 Ret(deep_map, Not, test_list_2);
-Ret(map, NAnd, test_list_2);
-Ret(map, NOr, test_list_2);
 
-Ret(insert_l, A(999), test_list_2, A(-1));
-Ret(insert_l, A(999), test_list_2, A(0));
-Ret(insert_l, A(999), test_list_2, A(1));
-Ret(insert_l, A(999), test_list_2, A(2));
-Ret(insert_l, A(999), test_list_2, A(3));
-Ret(insert_l, A(999), test_list_2, A(4));
+using insert_999_to_list_2 = Ret(bind, Ret(bind, insert_l, A(999), A(0)), test_list_2, A(0));
+Ret(map, insert_999_to_list_2, L(A(-1), A(0), A(1), A(2), A(3), A(4)));
 
-Ret(remove_l, test_list_2, A(-1));
-Ret(remove_l, test_list_2, A(0));
-Ret(remove_l, test_list_2, A(1));
-Ret(remove_l, test_list_2, A(2));
-Ret(remove_l, test_list_2, A(3));
+using remove_from_list_2 = Ret(bind, remove_l, test_list_2, A(0));
+Ret(map, remove_from_list_2, L(A(-1), A(0), A(1), A(2), A(3)));
 
-Ret(replace_l, A(999), test_list_2, A(-1));
-Ret(replace_l, A(999), test_list_2, A(0));
-Ret(replace_l, A(999), test_list_2, A(1));
-Ret(replace_l, A(999), test_list_2, A(2));
-Ret(replace_l, A(999), test_list_2, A(3));
-Ret(replace_l, A(999), test_list_2, A(4));
+using remove_from_list_3 = Ret(bind, remove_l, test_list_3, A(0));
+Ret(map, remove_from_list_2, L(A(-1), A(0), A(1), A(2), A(3)));
 
-test_list_3;
+using replace_list_2_with_999 = Ret(bind, Ret(bind, replace_l, A(999), A(0)), test_list_2, A(0));
+Ret(map, replace_list_2_with_999, L(A(-1), A(0), A(1), A(2), A(3), A(4)));
 
-Ret(remove_l, test_list_3, A(-1));
-Ret(remove_l, test_list_3, A(0));
-Ret(remove_l, test_list_3, A(1));
-Ret(remove_l, test_list_3, A(2));
-Ret(remove_l, test_list_3, A(3));
+using find_odds1 = C(Ret(bind, filter, odd, A(0)), bind::take_as_1_arg, flatten);
 
-Ret(filter, Not, L(True, False));
-Ret(filter, Not, L(False, False));
-Ret(filter, Not, L(True, True));
+Ret(find_odds1, test_list_1);
+Ret(find_odds1, test_list_1);
+Ret(find_odds1, test_list_1);
 
-Ret(filter, odd, Ret(flatten, test_list_1));
-Ret(filter, odd, Ret(flatten, test_list_3));
-
-Ret(deep_filter, odd, test_list_1);
-Ret(deep_filter, odd, test_list_3);
+using find_odds2 = C(Ret(bind, deep_filter, odd, A(0)), bind::take_as_1_arg);
+Ret(find_odds2, test_list_1);
+Ret(find_odds2, test_list_2);
+Ret(find_odds2, test_list_3);
 #endif
 
 #pragma region test streams
@@ -139,11 +110,11 @@ struct mk_prime_finder
             Ret(
                 bind,
                 cast,
-                L(bool, A(1))),
+                bool, A(1)),
             Ret(
                 bind,
                 Mod,
-                L(last_prime, A(1))));
+                last_prime, A(1)));
 
         using temp_s = L(INC(last_prime), Ret(peek_back, s));
 

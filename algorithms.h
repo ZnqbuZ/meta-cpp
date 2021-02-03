@@ -68,10 +68,10 @@ struct push_front
         using ret = D(push_front, T, V);
     };
 
-    template<typename T, typename...Ts>
-    struct apply_on<L(T, L(Ts...))>
+    template<typename T, is::list V>
+    struct apply_on<L(T, V)>
     {
-        using ret = L(Id(T), Id(Ts)...);
+        using ret = Ret(typename V::push_front, T);
     };
 };
 
@@ -91,10 +91,10 @@ struct push_back
         using ret = D(push_back, T, V);
     };
 
-    template<typename T, typename...Ts>
-    struct apply_on<L(T, L(Ts...))>
+    template<typename T, is::list V>
+    struct apply_on<L(T, V)>
     {
-        using ret = L(Id(Ts)..., Id(T));
+        using ret = Ret(typename V::push_back, T);
     };
 };
 
@@ -134,10 +134,10 @@ struct peek_front
     FUNC_HEAD_ID;
     WAIT_FOR_DELAYED_ARGS(peek_front);
 
-    template<typename T, typename...Ts>
-    struct apply_on<L(T, Ts...)>
+    template<is::list V>
+    struct apply_on<V>
     {
-        using ret = Id(T);
+        using ret = Ret(typename V::peek_front, void);
     };
 };
 
@@ -146,16 +146,10 @@ struct peek_back
     FUNC_HEAD_ID;
     WAIT_FOR_DELAYED_ARGS(peek_back);
 
-    template<typename T, typename...Ts>
-    struct apply_on<L(T, Ts...)>
+    template<is::list V>
+    struct apply_on<V>
     {
-        using ret = Ret(peek_back, L(Ts...));
-    };
-
-    template<typename T, typename V>
-    struct apply_on<L(T, V)>
-    {
-        using ret = Id(V);
+        using ret = Ret(typename V::peek_back, void);
     };
 };
 
@@ -163,10 +157,10 @@ struct pop_front
 {
     FUNC_HEAD_THROW(pop_front);
 
-    template<typename T, typename...Ts>
-    struct apply_on<L(T, Ts...)>
+    template<is::list V>
+    struct apply_on<V>
     {
-        using ret = P(Ts...);
+        using ret = Ret(typename V::pop_front, void);
     };
 };
 
@@ -174,22 +168,10 @@ struct pop_back
 {
     FUNC_HEAD_THROW(pop_back);
 
-    template<typename T1, typename...Ts>
-    struct apply_on<L(T1, Ts...)>
+    template<is::list V>
+    struct apply_on<V>
     {
-        using ret = Ret(push_front, Id(T1), Ret(pop_back, L(Ts...)));
-    };
-
-    template<typename T1, typename T2, typename T3>
-    struct apply_on<L(T1, T2, T3)>
-    {
-        using ret = L(Id(T1), Id(T2));
-    };
-
-    template<typename T1, typename T2>
-    struct apply_on<L(T1, T2)>
-    {
-        using ret = Id(T1);
+        using ret = Ret(typename V::pop_back, void);
     };
 };
 
@@ -292,11 +274,66 @@ struct replace_l
     };
 };
 
-template<is::ford f, typename T, is::arg N>
-template<is::list arg_list>
-struct bind::apply_on<L(f, L(T, N))>::ret::apply_on<arg_list>
+struct bind
 {
-    using ret = Ret(f, Ret(insert_l, T, arg_list, N));
+private:
+    template<is::list l>
+    struct __1_arg;
+public:
+    struct take_as_1_arg
+    {
+        FUNC_HEAD_THROW(take_as_1_arg);
+
+        template<is::list l>
+        struct apply_on<l>
+        {
+            using ret = __1_arg<l>;
+        };
+    };
+
+    FUNC_HEAD_THROW(bind);
+
+    template<typename T, is::arg N>
+    struct mask_list
+    {
+        template<typename V>
+        struct apply_on
+        {
+            using ret = L(T, V);
+        };
+
+        template<typename V>
+        requires(RetV(is_greater, N, A(0)))
+            struct apply_on<V>
+        {
+            using ret = L(V, T);
+        };
+
+        template<is::list V>
+        struct apply_on<__1_arg<V>>
+        {
+            using ret = L(T, V);
+        };
+
+        template<is::list V>
+        requires(RetV(is_greater, N, A(0)))
+            struct apply_on<__1_arg<V>>
+        {
+            using ret = L(V, T);
+        };
+
+        template<is::list arg_list>
+        struct apply_on<arg_list>
+        {
+            using ret = Ret(insert_l, T, arg_list, N);
+        };
+    };
+
+    template<is::ford f, typename T, is::arg N>
+    struct apply_on<L(f, T, N)>
+    {
+        using ret = C(f, mask_list<T, N>);
+    };
 };
 
 struct flatten
@@ -455,7 +492,7 @@ public:
     struct apply_on<L(f, l)>
     {
     private:
-        using __check_with_f = Ret(bind, __check, L(f, A(0)));
+        using __check_with_f = Ret(bind, __check, f, A(0));
     public:
         using ret = Ret(__filter, Ret(map, __check_with_f, l));
     };
@@ -491,7 +528,7 @@ public:
     struct apply_on<L(f, l)>
     {
     private:
-        using __check_with_f = Ret(bind, __check, L(f, A(0)));
+        using __check_with_f = Ret(bind, __check, f, A(0));
     public:
         using ret = Ret(__deep_filter, Ret(deep_map, __check_with_f, l));
     };
