@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.wls": "wolfram",
+    "system_error": "c",
+    "xlocale": "c"
+  }
+}
