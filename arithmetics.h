@@ -20,30 +20,49 @@ DEFN_BINARY_FUN(Mod, x, y, A(Value(x) % Value(y), Type(x)));
 
 #pragma endregion
 
-#pragma region 位运算
+#pragma region 位运算和逻辑运算
 
-// 懒得为逻辑运算单独优化了
+#define DEFN_UNARY_LOGIC_FUN(name, var, bitop, logicop)   \
+    struct name                                           \
+    {                                                     \
+        FUNC_HEAD_THROW(name);                            \
+        template <is::arg var>                            \
+        struct apply_on<var>                              \
+        {                                                 \
+            using ret = A(bitop Value(var), Type(var));   \
+        };                                                \
+        template <is::bool_type var>                      \
+        struct apply_on<var>                              \
+        {                                                 \
+            using ret = A(logicop Value(var), Type(var)); \
+        };                                                \
+    }
 
-DEFN_BINARY_FUN(And, x, y, A(Value(x) & Value(y), Type(x)));
-DEFN_BINARY_FUN(Or, x, y, A(Value(x) | Value(y), Type(x)));
+#define DEFN_BINARY_LOGIC_FUN(name, var1, var2, bitop, logicop)                    \
+    struct name                                                                    \
+    {                                                                              \
+        FUNC_HEAD_THROW(name);                                                     \
+        WAIT_FOR_n_DELAYED_ARGS(name, 2);                                          \
+        template <                                                                 \
+            is::arg var1,                                                          \
+            is::arg var2>                                                          \
+        struct apply_on<L(var1, var2)>                                             \
+        {                                                                          \
+            using ret = A(Value(var1) bitop Value(var2), Type(var1));              \
+        };                                                                         \
+        template <                                                                 \
+            is::bool_type var1,                                                    \
+            is::arg var2>                                                          \
+        struct apply_on<L(var1, var2)>                                             \
+        {                                                                          \
+            using ret = A(Value(var1) logicop RetV(cast, var2, bool), Type(var1)); \
+        };                                                                         \
+    }
 
-// bool 如果用~会有警告
-struct Not
-{
-    FUNC_HEAD_THROW(Not);
+DEFN_BINARY_LOGIC_FUN(And, x, y, &, &&);
+DEFN_BINARY_LOGIC_FUN(Or, x, y, |, ||);
 
-    template <is::arg x>
-    struct apply_on<x>
-    {
-        using ret = A(~Value(x), Type(x));
-    };
-
-    template <is::bool_type x>
-    struct apply_on<x>
-    {
-        using ret = A(!Value(x), Type(x));
-    };
-};
+DEFN_UNARY_LOGIC_FUN(Not, x, ~, !);
 
 DEFN_BINARY_FUN(Xor, x, y, A(Value(x) ^ Value(y), Type(x)));
 using NAnd = C(Not, And);

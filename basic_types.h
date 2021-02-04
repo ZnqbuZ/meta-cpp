@@ -243,7 +243,7 @@ class get final
 private:
     get();
     template <typename f, typename...>
-    requires(is::function<f> || is::delayed<f>) struct __ret;
+    requires(is::ford<f>) struct __ret;
 
     template <is::function f, typename... args>
     struct __ret<f, args...>
@@ -259,7 +259,7 @@ private:
 
 public:
     template <typename f, typename... args>
-    requires(is::function<f> || is::delayed<f>) using ret = typename __ret<f, args...>::ret;
+    requires(is::ford<f>) using ret = typename __ret<f, args...>::ret;
     template <is::arg T>
     using self = typename T::__self;
     template <is::arg T>
@@ -519,7 +519,7 @@ public:
     };
 };
 
-template <is::function T1, is::function T2, is::function... Ts>
+template <is::ford T1, is::ford T2, is::ford... Ts>
 struct List<T1, T2, Ts...> : public ListBase<T1, T2, Ts...>
 {
     template <typename arg_list>
@@ -534,6 +534,33 @@ struct delayed
 {
     using __func = f;
     using __args = P(args...);
+};
+
+struct apply
+{
+    FUNC_HEAD_THROW(apply);
+
+    template <is::ford f, typename arg_list>
+    struct apply_on<L(f, arg_list)>
+    {
+        using ret = Ret(f, arg_list);
+    };
+};
+
+struct wrap
+{
+    template <typename T>
+    struct apply_on
+    {
+        struct ret
+        {
+            template <typename V>
+            struct apply_on
+            {
+                using ret = T;
+            };
+        };
+    };
 };
 
 #define C(...) Ret(compose, __VA_ARGS__)
