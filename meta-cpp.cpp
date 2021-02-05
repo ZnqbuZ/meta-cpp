@@ -13,39 +13,39 @@ concept show = true;
 
 #pragma region test lists
 using test_list_1 =
-L(A(9),
-    L(A(1),
+    L(A(9),
+      L(A(1),
         L(A(2),
-            A(4))),
-    L(A(3),
+          A(4))),
+      L(A(3),
         A(4)),
-    L(A(7),
+      L(A(7),
         L(A(6),
-            L(A(2),
-                A(4)))),
-    A(10));
+          L(A(2),
+            A(4)))),
+      A(10));
 
 using test_list_2 =
-L(
-    L(A(1), A(2)),
-    L(A(2), A(3)),
-    L(A(3), A(4)));
+    L(
+        L(A(1), A(2)),
+        L(A(2), A(3)),
+        L(A(3), A(4)));
 
 using test_list_3 = Ret(push_back, L(L(A(4), A(5), A(7)), A(5)), test_list_2);
 
 using test_list_4 =
-L(
-    L(True, True),
-    L(True, False),
-    L(False, True),
-    L(False, False));
+    L(
+        L(True, True),
+        L(True, False),
+        L(False, True),
+        L(False, False));
 #pragma endregion
 
 DEFN_UNARY_FUN(twice, x, A(2 * Value(x)));
 DEFN_UNARY_FUN(odd, x, A(Value(x) % 2 != 0));
 using half = C(Div, L(id, A(2)));
 
-//#define ALGOR_TEST
+// #define ALGOR_TEST
 
 #ifdef ALGOR_TEST
 
@@ -143,10 +143,10 @@ struct mk_prime_finder
     };
 };
 using prime_seq =
-L(A(2), D(mk_prime_finder, L(A(2), force::avoid<Ret(peek_back, integer_seq)>)));
+    L(A(2), D(mk_prime_finder, L(A(2), force::avoid<Ret(peek_back, integer_seq)>)));
 #pragma endregion
 
-//#define STREAM_TEST
+// #define STREAM_TEST
 
 #ifdef STREAM_TEST
 
@@ -179,15 +179,13 @@ private:
     std::stringstream ss;
 
     template <typename... Ts, size_t... Is>
-    std::string __tuple2str(const std::tuple<Ts...>& t, std::index_sequence<Is...>)
+    void __tuple2str(const std::tuple<Ts...> &t, std::index_sequence<Is...>)
     {
         ss.clear();
 
         ss << "(";
         (..., (ss << (Is == 0 ? "" : ", "), operator()(std::get<Is>(t))));
         ss << ")";
-
-        return ss.str();
     }
 
 public:
@@ -201,9 +199,10 @@ public:
     }
 
     template <typename... Ts>
-    std::string operator()(const std::tuple<Ts...>& t)
+    std::string operator()(const std::tuple<Ts...> &t)
     {
-        return __tuple2str(t, std::make_index_sequence<sizeof...(Ts)>());
+        __tuple2str(t, std::make_index_sequence<sizeof...(Ts)>());
+        return ss.str();
     }
 } tuple2str;
 

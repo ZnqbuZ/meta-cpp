@@ -5,7 +5,7 @@
 
 struct force
 {
-    template <is::delayed T>
+    template <is::delayed d>
     struct avoid;
 
     FUNC_HEAD_ID;
@@ -17,7 +17,18 @@ struct force
     };
 };
 
-#define F(...) Ret(force, __VA_ARGS__)
+template <typename f, typename... args>
+struct delayed
+{
+    using __func = f;
+    using __args = Id(args...);
+
+    template <typename T>
+    struct apply_on
+    {
+        using ret = D(D(f, args...), Id(T));
+    };
+};
 
 namespace is
 {
@@ -31,7 +42,7 @@ struct make::stream
 {
     FUNC_HEAD_THROW(stream);
 
-    template <is::ford next, typename... Ts>
+    template <is::function next, typename... Ts>
     struct apply_on<L(next, Ts...)>
     {
         struct find_next
@@ -48,7 +59,7 @@ struct make::stream
         using ret = L(Ts..., D(find_next, Ts...));
     };
 
-    template <is::ford next, typename T>
+    template <is::function next, typename T>
     struct apply_on<L(next, T)>
     {
         struct find_next
@@ -94,7 +105,7 @@ struct map_s
     FUNC_HEAD_THROW(map_s);
     WAIT_FOR_n_DELAYED_ARGS(map_s, 2);
 
-    template <is::ford f, is::stream s>
+    template <is::function f, is::stream s>
     struct apply_on<L(f, s)>
     {
         using ret = Ret(
@@ -110,7 +121,7 @@ private:
     {
         FUNC_HEAD_THROW_NO_WAIT;
 
-        template <is::ford f, typename find_next>
+        template <is::function f, typename find_next>
         struct apply_on<L(f, force::avoid<find_next>)>
         {
             using next_list = F(find_next);
@@ -128,7 +139,7 @@ private:
 public:
     FUNC_HEAD_THROW(filter_s);
 
-    template <is::ford f, is::stream s>
+    template <is::function f, is::stream s>
     struct apply_on<L(f, s)>
     {
         using filtered = Ret(filter, f, Ret(pop_back, s));

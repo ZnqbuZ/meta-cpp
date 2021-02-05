@@ -172,7 +172,9 @@ struct List : public ListBase<T1, T2, Ts...>
 // 不能在delayed中检测f是否是函数，如果f中有无终止条件的递归（如流）将检测失败
 template <typename f, typename...>
 struct delayed;
+struct force;
 #define D(...) delayed<__VA_ARGS__>
+#define F(...) Ret(force, __VA_ARGS__)
 
 namespace is
 {
@@ -182,7 +184,7 @@ namespace is
 
     template <typename T>
     concept arg =
-        function<T> && requires
+        function<T> &&requires
     {
         typename T::__type;
         T::__value;
@@ -203,16 +205,14 @@ namespace is
     template <typename T>
     concept not_delayed = !delayed<T>;
 
-    template <typename T>
-    concept ford = function<T> || delayed<T>;
 }; // namespace is
 
 class get final
 {
 private:
     get();
-    template <typename f, typename...>
-    requires(is::ford<f>) struct __ret;
+    template <is::function f, typename...>
+    struct __ret;
 
     template <typename T>
     SIC auto name();
@@ -221,13 +221,13 @@ private:
     struct __value;
 
 public:
-    template <is::ford f, typename... args>
+    template <is::function f, typename... args>
     using ret = typename __ret<f, args...>::ret;
     template <is::arg T>
     using type = typename T::__type;
     template <typename T>
     SIC auto value = __value<T>::ret;
-    template <is::ford f, typename... args>
+    template <is::function f, typename... args>
     SIC auto ret_v = value<ret<f, args...>>;
     template <is::list T>
     using length = typename T::__length;
@@ -285,7 +285,7 @@ namespace is
     template <typename T>
     concept bool_type =
         arg<T> && (Value(T) == true ||
-            Value(T) == false);
+                   Value(T) == false);
 
     template <typename T>
     concept unidentified_type =
@@ -405,7 +405,7 @@ __GEN_CHAR_ARG_MAKER(Letter, z);
 #pragma region get
 
 template <is::function f, typename... args>
-struct get::__ret<f, args...>
+struct get::__ret
 {
     using ret = typename f::template apply_on<L(args...)>::ret;
 };
@@ -414,12 +414,6 @@ template <is::function f, typename arg>
 struct get::__ret<f, arg>
 {
     using ret = typename f::template apply_on<arg>::ret;
-};
-
-template <is::delayed f, typename... args>
-struct get::__ret<f, args...>
-{
-    using ret = D(f, args...);
 };
 
 template <typename T>
@@ -502,7 +496,7 @@ struct ListBase
         template <typename T>
         struct apply_on
         {
-            using ret = decltype(Id(T1) {}, ((Id(T2) {}), ..., (Id(Ts) {})));
+            using ret = decltype(Id(T1){}, ((Id(T2){}), ..., (Id(Ts){})));
         };
     };
     struct pop_front
@@ -544,7 +538,7 @@ public:
     };
 };
 
-template <is::ford T1, is::ford T2, is::ford... Ts>
+template <is::function T1, is::function T2, is::function... Ts>
 struct List<T1, T2, Ts...> : public ListBase<T1, T2, Ts...>
 {
     template <typename arg_list>
@@ -554,18 +548,11 @@ struct List<T1, T2, Ts...> : public ListBase<T1, T2, Ts...>
     };
 };
 
-template <typename f, typename... args>
-struct delayed
-{
-    using __func = f;
-    using __args = Id(args...);
-};
-
 struct apply
 {
     FUNC_HEAD_THROW(apply);
 
-    template <is::ford f, typename arg_list>
+    template <is::function f, typename arg_list>
     struct apply_on<L(f, arg_list)>
     {
         using ret = Ret(f, arg_list);
@@ -593,13 +580,13 @@ struct compose
 {
     FUNC_HEAD_THROW(compose);
 
-    template <is::ford f, is::ford... gs>
+    template <is::function f, is::function... gs>
     struct apply_on<L(f, gs...)>
     {
         using ret = C(f, C(gs...));
     };
 
-    template <is::ford f, is::ford g>
+    template <is::function f, is::function g>
     struct apply_on<L(f, g)>
     {
         struct ret
@@ -617,7 +604,7 @@ namespace is
 {
     template <typename a, typename T>
     concept castable =
-        arg<a> && requires { (T)Value(a); };
+        arg<a> &&requires { (T) Value(a); };
 } // namespace is
 
 struct cast

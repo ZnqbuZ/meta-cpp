@@ -22,18 +22,18 @@ struct do_if
     FUNC_HEAD_THROW(do_if);
 
     template <
-        is::bool_type cond,
-        is::ford THEN, typename THEN_arg_list,
-        is::ford ELSE, typename ELSE_arg_list>
-    requires(is::delayed<cond>) struct apply_on<L(cond, THEN, THEN_arg_list, ELSE, ELSE_arg_list)>
+        is::delayed cond,
+        is::function THEN, typename THEN_arg_list,
+        is::function ELSE, typename ELSE_arg_list>
+    struct apply_on<L(cond, THEN, THEN_arg_list, ELSE, ELSE_arg_list)>
     {
         using ret = D(do_if, cond, THEN, THEN_arg_list, ELSE, ELSE_arg_list);
     };
 
     template <
         is::bool_type cond,
-        is::ford THEN, typename THEN_arg_list,
-        is::ford ELSE, typename ELSE_arg_list>
+        is::function THEN, typename THEN_arg_list,
+        is::function ELSE, typename ELSE_arg_list>
     requires(Value(cond)) struct apply_on<L(cond, THEN, THEN_arg_list, ELSE, ELSE_arg_list)>
     {
         using ret = Ret(THEN, THEN_arg_list);
@@ -41,8 +41,8 @@ struct do_if
 
     template <
         is::bool_type cond,
-        is::ford THEN, typename THEN_arg_list,
-        is::ford ELSE, typename ELSE_arg_list>
+        is::function THEN, typename THEN_arg_list,
+        is::function ELSE, typename ELSE_arg_list>
     requires(!Value(cond)) struct apply_on<L(cond, THEN, THEN_arg_list, ELSE, ELSE_arg_list)>
     {
         using ret = Ret(ELSE, ELSE_arg_list);
@@ -322,7 +322,7 @@ public:
         };
     };
 
-    template <is::ford f, typename T, is::arg N>
+    template <is::function f, typename T, is::arg N>
     struct apply_on<L(f, T, N)>
     {
         using ret = C(f, mask_list<T, N>);
@@ -346,13 +346,13 @@ struct map
     FUNC_HEAD_THROW(map);
     //WAIT_FOR_n_DELAYED_ARGS(map, 2);
 
-    template <is::ford f, typename T>
+    template <is::function f, typename T>
     struct apply_on<L(f, T)>
     {
         using ret = Ret(f, T);
     };
 
-    template <is::ford f, typename... Ts>
+    template <is::function f, typename... Ts>
     struct apply_on<L(f, L(Ts...))>
     {
         using ret = L(Ret(f, Ts)...);
@@ -364,7 +364,7 @@ struct deep_map
     FUNC_HEAD_THROW(deep_map);
     //WAIT_FOR_n_DELAYED_ARGS(deep_map, 2);
 
-    template <is::ford f, typename T>
+    template <is::function f, typename T>
     struct apply_on<L(f, T)>
     {
     private:
@@ -402,7 +402,7 @@ private:
     {
         FUNC_HEAD_THROW(__check);
 
-        template <is::ford f, typename T>
+        template <is::function f, typename T>
         struct apply_on<L(f, T)>
         {
             using ret = Select(Ret(cast, Ret(f, T), bool), T, Null);
@@ -473,13 +473,13 @@ public:
     FUNC_HEAD_THROW(filter);
     WAIT_FOR_n_DELAYED_ARGS(filter, 2);
 
-    template <is::ford f, typename T>
+    template <is::function f, typename T>
     struct apply_on<L(f, T)>
     {
         using ret = Ret(__check, f, T);
     };
 
-    template <is::ford f, is::list l>
+    template <is::function f, is::list l>
     struct apply_on<L(f, l)>
     {
     private:
@@ -511,13 +511,13 @@ public:
     FUNC_HEAD_THROW(deep_filter);
     WAIT_FOR_n_DELAYED_ARGS(deep_filter, 2);
 
-    template <is::ford f, typename T>
+    template <is::function f, typename T>
     struct apply_on<L(f, T)>
     {
         using ret = Ret(__check, f, T);
     };
 
-    template <is::ford f, is::list l>
+    template <is::function f, is::list l>
     struct apply_on<L(f, l)>
     {
     private:
