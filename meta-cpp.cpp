@@ -58,6 +58,7 @@ SHOW(Ret(deep_map, L(Inc, Neg, Dec), test_list_1));
 
 SHOW(Ret(map, swap, test_list_2));
 
+// 这就是为什么不允许只有一个元素的和空的表
 SHOW(Ret(map, L(Add, Sub, Mul, Div), test_list_2));
 
 SHOW(Ret(map, L(And, Or, Xor, NAnd, NOr), test_list_2));
@@ -145,7 +146,7 @@ using prime_seq =
 L(A(2), D(mk_prime_finder, L(A(2), force::avoid<Ret(peek_back, integer_seq)>)));
 #pragma endregion
 
-// #define STREAM_TEST
+//#define STREAM_TEST
 
 #ifdef STREAM_TEST
 
@@ -164,39 +165,12 @@ SHOW(Ret(pop_back, Ret(calc, prime_seq, A(30))));
 
 #include <iostream>
 #include <tuple>
-#include <typeinfo>
 #include <sstream>
-#include <type_traits>
-
-using namespace std;
-#define SIC static inline constexpr
-
-template <typename T>
-constexpr auto get_name()
-{
-#ifdef _MSC_VER
-    return __FUNCSIG__;
-#else
-    return __PRETTY_FUNCTION__;
-#endif
-}
-
-template <typename T>
-struct get_info
-{
-    SIC auto ret = get_name<T>();
-};
-
-template <is::arg T>
-struct get_info<T>
-{
-    SIC Type(T) ret = Value(T);
-};
 
 template <typename... Ts>
-struct get_info<L(Ts...)>
+struct get::__value<L(Ts...)>
 {
-    SIC auto ret = make_tuple(get_info<Ts>::ret...);
+    SIC auto ret = std::make_tuple(__value<Ts>::ret...);
 };
 
 struct
@@ -235,6 +209,7 @@ public:
 
 int main()
 {
-    auto primes = get_info<Ret(C(pop_back, calc), prime_seq, A(29))>::ret;
-    cout << tuple2str(primes) << endl;
+    auto primes = Value(Ret(C(pop_back, calc), prime_seq, A(9)));
+    std::cout << tuple2str(primes) << std::endl;
+    return 0;
 }

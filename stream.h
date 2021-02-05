@@ -8,11 +8,7 @@ struct force
     template <is::delayed T>
     struct avoid;
 
-    template <typename T>
-    struct apply_on
-    {
-        using ret = Id(T);
-    };
+    FUNC_HEAD_ID;
 
     template <is::delayed d>
     struct apply_on<d>

@@ -58,11 +58,12 @@
 #define __FIND_5TH_ARG(arg1, arg2, arg3, arg4, arg5, ...) arg5
 #define __FIND_6TH_ARG(arg1, arg2, arg3, arg4, arg5, arg6, ...) arg6
 
+#define SIC static inline constexpr
 #define __DEFN_NAMED_ARG(name, type, value, self) \
     struct name                                   \
     {                                             \
         using __type = type;                      \
-        constexpr static __type __value = value;  \
+        SIC __type __value = value;               \
                                                   \
         template <typename arg_list>              \
         struct apply_on                           \
@@ -181,7 +182,7 @@ namespace is
 
     template <typename T>
     concept arg =
-        function<T> &&requires
+        function<T> && requires
     {
         typename T::__type;
         T::__value;
@@ -206,38 +207,6 @@ namespace is
     concept ford = function<T> || delayed<T>;
 }; // namespace is
 
-class make final
-{
-private:
-    make();
-    template <typename type, type>
-    struct __arg;
-
-    template <typename... Ts>
-    struct __pack
-    {
-        using ret = L(Ts...);
-    };
-    template <typename T>
-    struct __pack<T>
-    {
-        using ret = T;
-    };
-
-public:
-    template <auto value, typename type = decltype(value)>
-    using arg = typename __arg<type, value>::ret;
-
-    template <typename... Ts>
-    using pack = typename __pack<Ts...>::ret;
-
-    struct stream;
-};
-
-#define A(...) make::arg<__VA_ARGS__>
-#define P(...) make::pack<__VA_ARGS__>
-#define S(...) Ret(make::stream, __VA_ARGS__)
-
 class get final
 {
 private:
@@ -245,29 +214,21 @@ private:
     template <typename f, typename...>
     requires(is::ford<f>) struct __ret;
 
-    template <is::function f, typename... args>
-    struct __ret<f, args...>
-    {
-        using ret = typename f::template apply_on<P(args...)>::ret;
-    };
+    template <typename T>
+    SIC auto name();
 
-    template <is::delayed f, typename... args>
-    struct __ret<f, args...>
-    {
-        using ret = D(f, args...);
-    };
+    template <typename T>
+    struct __value;
 
 public:
-    template <typename f, typename... args>
-    requires(is::ford<f>) using ret = typename __ret<f, args...>::ret;
-    template <is::arg T>
-    using self = typename T::__self;
+    template <is::ford f, typename... args>
+    using ret = typename __ret<f, args...>::ret;
     template <is::arg T>
     using type = typename T::__type;
-    template <is::arg T>
-    static constexpr auto value = T::__value;
-    template <is::function f, typename... args>
-    static constexpr auto ret_v = value<ret<f, args...>>;
+    template <typename T>
+    SIC auto value = __value<T>::ret;
+    template <is::ford f, typename... args>
+    SIC auto ret_v = value<ret<f, args...>>;
     template <is::list T>
     using length = typename T::__length;
     template <is::delayed d>
@@ -282,6 +243,23 @@ public:
 #define Len(...) get::length<__VA_ARGS__>
 #define Id(...) get::ret<id, __VA_ARGS__>
 #define Ret(...) Id(get::ret<__VA_ARGS__>)
+
+class make final
+{
+private:
+    make();
+    template <typename type, type>
+    struct __arg;
+
+public:
+    template <auto value, typename type = decltype(value)>
+    using arg = typename __arg<type, value>::ret;
+
+    struct stream;
+};
+
+#define A(...) make::arg<__VA_ARGS__>
+#define S(...) Ret(make::stream, __VA_ARGS__)
 
 struct is_same
 {
@@ -307,7 +285,7 @@ namespace is
     template <typename T>
     concept bool_type =
         arg<T> && (Value(T) == true ||
-                   Value(T) == false);
+            Value(T) == false);
 
     template <typename T>
     concept unidentified_type =
@@ -424,6 +402,53 @@ __GEN_CHAR_ARG_MAKER(Letter, z);
 #undef __DEFN_ARG_MAKER
 #pragma endregion
 
+#pragma region get
+
+template <is::function f, typename... args>
+struct get::__ret<f, args...>
+{
+    using ret = typename f::template apply_on<L(args...)>::ret;
+};
+
+template <is::function f, typename arg>
+struct get::__ret<f, arg>
+{
+    using ret = typename f::template apply_on<arg>::ret;
+};
+
+template <is::delayed f, typename... args>
+struct get::__ret<f, args...>
+{
+    using ret = D(f, args...);
+};
+
+template <typename T>
+constexpr auto get::name()
+{
+#ifdef __FUNCSIG__
+    return __FUNCSIG__;
+#else
+#ifdef __PRETTY_FUNCTION__
+    return __PRETTY_FUNCTION__;
+#else
+    return "Unidentified";
+#endif
+#endif
+}
+
+template <typename T>
+struct get::__value
+{
+    SIC auto ret = get::name<T>();
+};
+
+template <is::arg T>
+struct get::__value<T>
+{
+    SIC Type(T) ret = T::__value;
+};
+#pragma endregion
+
 template <bool b>
 using Bool = A(b);
 template <char c>
@@ -440,7 +465,7 @@ struct id
     template <is::arg T>
     struct apply_on<T>
     {
-        using ret = get::ret<T, void>;
+        using ret = get::ret<T, void>; // Ret(T, void);
     };
 };
 
@@ -477,7 +502,7 @@ struct ListBase
         template <typename T>
         struct apply_on
         {
-            using ret = decltype(Id(T1){}, ((Id(T2){}), ..., (Id(Ts){})));
+            using ret = decltype(Id(T1) {}, ((Id(T2) {}), ..., (Id(Ts) {})));
         };
     };
     struct pop_front
@@ -485,7 +510,7 @@ struct ListBase
         template <typename T>
         struct apply_on
         {
-            using ret = P(Id(T2), Ts...);
+            using ret = Id(Id(T2), Ts...);
         };
     };
 
@@ -533,7 +558,7 @@ template <typename f, typename... args>
 struct delayed
 {
     using __func = f;
-    using __args = P(args...);
+    using __args = Id(args...);
 };
 
 struct apply
@@ -592,7 +617,7 @@ namespace is
 {
     template <typename a, typename T>
     concept castable =
-        arg<a> &&requires { (T) Value(a); };
+        arg<a> && requires { (T)Value(a); };
 } // namespace is
 
 struct cast

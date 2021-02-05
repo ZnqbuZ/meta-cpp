@@ -188,7 +188,7 @@ struct insert_l
         RetV(is_greater, Index, A(0)) &&
         RetV(is_less, Index, A(1 + sizeof...(Ts)))) struct apply_on<L(T, L(T1, Ts...), Index)>
     {
-        using ret = Ret(push_front, T1, Ret(insert_l, T, P(Ts...), DEC(Index)));
+        using ret = Ret(push_front, T1, Ret(insert_l, T, Id(Ts...), DEC(Index)));
     };
 
     template <typename T, is::list l>
@@ -226,7 +226,7 @@ struct remove_l
         RetV(is_greater, Index, A(0)) &&
         RetV(is_less, Index, A(sizeof...(Ts)))) struct apply_on<L(L(T1, Ts...), Index)>
     {
-        using ret = Ret(push_front, T1, Ret(remove_l, P(Ts...), DEC(Index)));
+        using ret = Ret(push_front, T1, Ret(remove_l, Id(Ts...), DEC(Index)));
     };
 
     template <is::list l>
@@ -337,7 +337,7 @@ struct flatten
     template <typename T, typename... Ts>
     struct apply_on<L(T, Ts...)>
     {
-        using ret = Ret(join, Ret(flatten, T), Ret(flatten, P(Ts...)));
+        using ret = Ret(join, Ret(flatten, T), Ret(flatten, Id(Ts...)));
     };
 };
 
