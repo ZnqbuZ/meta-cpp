@@ -83,13 +83,12 @@
                 __DEFN_NAMED_ARG, \
                 __DEFN_UNNAMED_ARG))(__VA_ARGS__))
 
-template <int n>
-__DEFN_ARG(Int, int, n, Int<n>);
+template<int n>
+__DEFN_ARG(Int, int, n, Int < n >);
 __DEFN_ARG(True, bool, true);
 __DEFN_ARG(False, bool, false);
-namespace chars
-{
-    template <char c>
+namespace chars {
+    template<char c>
     __DEFN_ARG(Special_ASCII, char, c);
 
 #define __DEFN_CHAR_ARG(ch_type, c) \
@@ -161,79 +160,74 @@ namespace chars
 #undef __DEFN_CHAR_ARG
 }; // namespace chars
 
-template <typename, typename, typename...>
+template<typename, typename, typename...>
 struct ListBase;
-template <typename T1, typename T2, typename... Ts>
-struct List : public ListBase<T1, T2, Ts...>
-{
+template<typename T1, typename T2, typename... Ts>
+struct List : public ListBase<T1, T2, Ts...> {
 };
 #define L(...) List<__VA_ARGS__>
 
-// ≤ªƒ‹‘⁄delayed÷–ºÏ≤‚f «∑Ò «∫Ø ˝£¨»Áπ˚f÷–”–Œﬁ÷’÷πÃıº˛µƒµ›πÈ£®»Á¡˜£©Ω´ºÏ≤‚ ß∞‹
-template <typename f, typename...>
+// ‰∏çËÉΩÂú®delayed‰∏≠Ê£ÄÊµãfÊòØÂê¶ÊòØÂáΩÊï∞ÔºåÂ¶ÇÊûúf‰∏≠ÊúâÊó†ÁªàÊ≠¢Êù°‰ª∂ÁöÑÈÄíÂΩíÔºàÂ¶ÇÊµÅÔºâÂ∞ÜÊ£ÄÊµãÂ§±Ë¥•
+template<typename f, typename...>
 struct delayed;
 struct force;
 #define D(...) delayed<__VA_ARGS__>
 #define F(...) Ret(force, __VA_ARGS__)
 
-namespace is
-{
-    template <typename T>
-    concept function =
-        requires { typename T::template apply_on<Int<0>>::ret; };
+namespace is {
+    template<typename T>
+    concept function =requires { typename T::template apply_on<Int<0>>::ret; };
 
-    template <typename T>
+    template<typename T>
     concept arg =
-        function<T> &&requires
+    function<T> && requires
     {
         typename T::__type;
         T::__value;
     };
 
-    template <typename T>
-    concept list =
-        requires { typename T::__length; };
+    template<typename T>
+    concept list =requires { typename T::__length; };
 
-    template <typename T>
-    concept delayed =
-        requires
+    template<typename T>
+    concept delayed =requires
     {
         typename T::__func;
         typename T::__args;
     };
 
-    template <typename T>
+    template<typename T>
     concept not_delayed = !delayed<T>;
 
 }; // namespace is
 
-class get final
-{
+class get final {
 private:
-    get();
-    template <is::function f, typename...>
+    template<is::function f, typename...>
     struct __ret;
 
-    template <typename T>
+    template<typename T>
     SIC auto name();
 
-    template <typename T>
+    template<typename T>
     struct __value;
 
 public:
-    template <is::function f, typename... args>
+    get() = delete;
+
+    template<is::function f, typename... args>
     using ret = typename __ret<f, args...>::ret;
-    template <is::arg T>
+    template<is::arg T>
     using type = typename T::__type;
-    template <typename T>
+    template<typename T>
     SIC auto value = __value<T>::ret;
-    template <is::function f, typename... args>
+    template<is::function f, typename... args>
     SIC auto ret_v = value<ret<f, args...>>;
-    template <is::list T>
+    template<is::list T>
     using length = typename T::__length;
-    template <is::delayed d>
+    template<is::delayed d>
     using d_func = typename d::__func;
-    template <is::delayed d>
+    template<is::delayed d>
     using d_args = typename d::__args;
 };
 
@@ -244,15 +238,15 @@ public:
 #define Id(...) get::ret<id, __VA_ARGS__>
 #define Ret(...) Id(get::ret<__VA_ARGS__>)
 
-class make final
-{
+class make final {
 private:
-    make();
-    template <typename type, type>
+    template<typename type, type>
     struct __arg;
 
 public:
-    template <auto value, typename type = decltype(value)>
+    make() = delete;
+
+    template<auto value, typename type = decltype(value)>
     using arg = typename __arg<type, value>::ret;
 
     struct stream;
@@ -261,40 +255,36 @@ public:
 #define A(...) make::arg<__VA_ARGS__>
 #define S(...) Ret(make::stream, __VA_ARGS__)
 
-struct is_same
-{
+struct is_same {
     FUNC_HEAD_THROW(is_same);
     WAIT_FOR_n_DELAYED_ARGS(is_same, 2);
 
-    template <typename T, typename V>
-    struct apply_on<L(T, V)>
-    {
+    template<typename T, typename V>
+    struct apply_on<L(T, V) > {
         using ret = False;
     };
 
-    template <typename T>
-    struct apply_on<L(T, T)>
-    {
+    template<typename T>
+    struct apply_on<L(T, T) > {
         using ret = True;
     };
 };
 
-namespace is
-{
-    // const bool µ»“≤»œŒ™ «bool_value
-    template <typename T>
+namespace is {
+    // const bool Á≠â‰πüËÆ§‰∏∫ÊòØ bool_value
+    template<typename T>
     concept bool_type =
-        arg<T> && (Value(T) == true ||
-                   Value(T) == false);
+    arg<T> && (Value(T) == true ||
+               Value(T) == false);
 
-    template <typename T>
+    template<typename T>
     concept unidentified_type =
-        !RetV(is_same, T, int) &&
-        !RetV(is_same, T, bool) &&
-        !RetV(is_same, T, char);
+    !RetV(is_same, T, int) &&
+    !RetV(is_same, T, bool) &&
+    !RetV(is_same, T, char);
 }; // namespace is
 
-template <is::unidentified_type Unidentified, Unidentified value>
+template<is::unidentified_type Unidentified, Unidentified value>
 __DEFN_ARG(Arg, Unidentified, value);
 
 #undef __DEFN_ARG
@@ -303,30 +293,25 @@ __DEFN_ARG(Arg, Unidentified, value);
 
 #define __DEFN_ARG_MAKER(...)    \
     {                            \
-        friend make;             \
+        friend class make;       \
                                  \
     private:                     \
         using ret = __VA_ARGS__; \
     }
 
-template <typename Unidentified, Unidentified value>
-struct make::__arg
-    __DEFN_ARG_MAKER(Arg<Unidentified, value>);
-template <int n>
-struct make::__arg<int, n>
-    __DEFN_ARG_MAKER(Int<n>);
-template <>
-struct make::__arg<bool, true>
-    __DEFN_ARG_MAKER(True);
-template <>
-struct make::__arg<bool, false>
-    __DEFN_ARG_MAKER(False);
+template<typename Unidentified, Unidentified value>
+struct make::__arg __DEFN_ARG_MAKER(Arg<Unidentified, value>);
+template<int n>
+struct make::__arg<int, n> __DEFN_ARG_MAKER(Int<n>);
+template<>
+struct make::__arg<bool, true> __DEFN_ARG_MAKER(True);
+template<>
+struct make::__arg<bool, false> __DEFN_ARG_MAKER(False);
 
 #pragma region Char Argument Makers
 
-template <char c>
-struct make::__arg<char, c>
-    __DEFN_ARG_MAKER(chars::Special_ASCII<c>);
+template<char c>
+struct make::__arg<char, c> __DEFN_ARG_MAKER(chars::Special_ASCII<c>);
 
 #define __GEN_CHAR_ARG_MAKER(type, c)    \
     template <>                          \
@@ -404,21 +389,18 @@ __GEN_CHAR_ARG_MAKER(Letter, z);
 
 #pragma region get
 
-template <is::function f, typename... args>
-struct get::__ret
-{
-    using ret = typename f::template apply_on<L(args...)>::ret;
+template<is::function f, typename... args>
+struct get::__ret {
+    using ret = typename f::template apply_on<L(args...) >::ret;
 };
 
-template <is::function f, typename arg>
-struct get::__ret<f, arg>
-{
+template<is::function f, typename arg>
+struct get::__ret<f, arg> {
     using ret = typename f::template apply_on<arg>::ret;
 };
 
-template <typename T>
-constexpr auto get::name()
-{
+template<typename T>
+constexpr auto get::name() {
 #ifdef __FUNCSIG__
     return __FUNCSIG__;
 #else
@@ -430,145 +412,116 @@ constexpr auto get::name()
 #endif
 }
 
-template <typename T>
-struct get::__value
-{
+template<typename T>
+struct get::__value {
     SIC auto ret = get::name<T>();
 };
 
-template <is::arg T>
-struct get::__value<T>
-{
+template<is::arg T>
+struct get::__value<T> {
     SIC Type(T) ret = T::__value;
 };
 #pragma endregion
 
-template <bool b>
+template<bool b>
 using Bool = A(b);
-template <char c>
+template<char c>
 using Char = A(c);
 
-struct id
-{
-    template <typename T>
-    struct apply_on
-    {
+struct id {
+    template<typename T>
+    struct apply_on {
         using ret = T;
     };
 
-    template <is::arg T>
-    struct apply_on<T>
-    {
+    template<is::arg T>
+    struct apply_on<T> {
         using ret = get::ret<T, void>; // Ret(T, void);
     };
 };
 
-template <typename T1, typename T2, typename... Ts>
-struct ListBase
-{
+template<typename T1, typename T2, typename... Ts>
+struct ListBase {
     using __length = Int<2 + sizeof...(Ts)>;
-    struct push_front
-    {
-        template <typename T>
-        struct apply_on
-        {
+    struct push_front {
+        template<typename T>
+        struct apply_on {
             using ret = L(Id(T), Id(T1), Id(T2), Ts...);
         };
     };
-    struct push_back
-    {
-        template <typename T>
-        struct apply_on
-        {
+    struct push_back {
+        template<typename T>
+        struct apply_on {
             using ret = L(Id(T1), Id(T2), Ts..., Id(T));
         };
     };
-    struct peek_front
-    {
-        template <typename T>
-        struct apply_on
-        {
+    struct peek_front {
+        template<typename T>
+        struct apply_on {
             using ret = Id(T1);
         };
     };
-    struct peek_back
-    {
-        template <typename T>
-        struct apply_on
-        {
+    struct peek_back {
+        template<typename T>
+        struct apply_on {
             using ret = decltype(Id(T1){}, ((Id(T2){}), ..., (Id(Ts){})));
         };
     };
-    struct pop_front
-    {
-        template <typename T>
-        struct apply_on
-        {
+    struct pop_front {
+        template<typename T>
+        struct apply_on {
             using ret = Id(Id(T2), Ts...);
         };
     };
 
 private:
-    template <typename...>
+    template<typename...>
     struct discard_last;
-    template <typename V1, typename V2, typename V3, typename... Vs>
-    struct discard_last<V1, V2, V3, Vs...>
-    {
+    template<typename V1, typename V2, typename V3, typename... Vs>
+    struct discard_last<V1, V2, V3, Vs...> {
         using ret = Ret(typename discard_last<V2, V3, Vs...>::ret::push_front, Id(V1));
     };
-    template <typename V1, typename V2, typename V3>
-    struct discard_last<V1, V2, V3>
-    {
+    template<typename V1, typename V2, typename V3>
+    struct discard_last<V1, V2, V3> {
         using ret = L(Id(V1), Id(V2));
     };
-    template <typename V1, typename V2>
-    struct discard_last<V1, V2>
-    {
+    template<typename V1, typename V2>
+    struct discard_last<V1, V2> {
         using ret = Id(V1);
     };
 
 public:
-    struct pop_back
-    {
-        template <typename T>
-        struct apply_on
-        {
+    struct pop_back {
+        template<typename T>
+        struct apply_on {
             using ret = typename discard_last<T1, T2, Ts...>::ret;
         };
     };
 };
 
-template <is::function T1, is::function T2, is::function... Ts>
-struct List<T1, T2, Ts...> : public ListBase<T1, T2, Ts...>
-{
-    template <typename arg_list>
-    struct apply_on
-    {
+template<is::function T1, is::function T2, is::function... Ts>
+struct List<T1, T2, Ts...> : public ListBase<T1, T2, Ts...> {
+    template<typename arg_list>
+    struct apply_on {
         using ret = L(Ret(T1, arg_list), Ret(T2, arg_list), Ret(Ts, arg_list)...);
     };
 };
 
-struct apply
-{
+struct apply {
     FUNC_HEAD_THROW(apply);
 
-    template <is::function f, typename arg_list>
-    struct apply_on<L(f, arg_list)>
-    {
+    template<is::function f, typename arg_list>
+    struct apply_on<L(f, arg_list) > {
         using ret = Ret(f, arg_list);
     };
 };
 
-struct wrap
-{
-    template <typename T>
-    struct apply_on
-    {
-        struct ret
-        {
-            template <typename V>
-            struct apply_on
-            {
+struct wrap {
+    template<typename T>
+    struct apply_on {
+        struct ret {
+            template<typename V>
+            struct apply_on {
                 using ret = T;
             };
         };
@@ -576,46 +529,38 @@ struct wrap
 };
 
 #define C(...) Ret(compose, __VA_ARGS__)
-struct compose
-{
+struct compose {
     FUNC_HEAD_THROW(compose);
 
-    template <is::function f, is::function... gs>
-    struct apply_on<L(f, gs...)>
-    {
+    template<is::function f, is::function... gs>
+    struct apply_on<L(f, gs...) > {
         using ret = C(f, C(gs...));
     };
 
-    template <is::function f, is::function g>
-    struct apply_on<L(f, g)>
-    {
-        struct ret
-        {
-            template <typename arg_list>
-            struct apply_on
-            {
+    template<is::function f, is::function g>
+    struct apply_on<L(f, g) > {
+        struct ret {
+            template<typename arg_list>
+            struct apply_on {
                 using ret = Ret(f, Ret(g, arg_list));
             };
         };
     };
 };
 
-namespace is
-{
-    template <typename a, typename T>
+namespace is {
+    template<typename a, typename T>
     concept castable =
-        arg<a> &&requires { (T) Value(a); };
+    arg<a> && requires { (T) Value(a); };
 } // namespace is
 
-struct cast
-{
+struct cast {
     FUNC_HEAD_THROW(cast);
     WAIT_FOR_n_DELAYED_ARGS(cast, 2);
 
-    template <is::arg arg, typename T>
-    requires(is::castable<arg, T>) struct apply_on<L(arg, T)>
-    {
-        using ret = A((T)Value(arg), Id(T));
+    template<is::arg arg, typename T> requires(is::castable<arg, T>)
+    struct apply_on<L(arg, T) > {
+        using ret = A((T) Value(arg), Id(T));
     };
 };
 
@@ -652,25 +597,21 @@ DEFN_BINARY_FUN(is_greater, x, y, A((Value(x) > Value(y)), bool));
 DEFN_BINARY_FUN(is_less, x, y, A(Value(x) < Value(y), bool));
 
 #define Select(...) Ret(select, __VA_ARGS__)
-struct select
-{
+struct select {
     FUNC_HEAD_THROW(select);
 
-    template <is::delayed cond, typename THEN, typename ELSE>
-    struct apply_on<L(cond, THEN, ELSE)>
-    {
+    template<is::delayed cond, typename THEN, typename ELSE>
+    struct apply_on<L(cond, THEN, ELSE) > {
         using ret = D(select, cond, THEN, ELSE);
     };
 
-    template <is::bool_type cond, typename THEN, typename ELSE>
-    requires(Value(cond)) struct apply_on<L(cond, THEN, ELSE)>
-    {
+    template<is::bool_type cond, typename THEN, typename ELSE> requires(Value(cond))
+    struct apply_on<L(cond, THEN, ELSE) > {
         using ret = THEN;
     };
 
-    template <is::bool_type cond, typename THEN, typename ELSE>
-    requires(!Value(cond)) struct apply_on<L(cond, THEN, ELSE)>
-    {
+    template<is::bool_type cond, typename THEN, typename ELSE> requires (!Value(cond))
+    struct apply_on<L(cond, THEN, ELSE) > {
         using ret = ELSE;
     };
 };
