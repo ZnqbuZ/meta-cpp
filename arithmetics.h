@@ -1,8 +1,8 @@
 #pragma once
 
-#include "basic_types.h"
+#include "types.h"
 
-#pragma region Æ¤ÑÇÅµÔËËã
+#pragma region çš®äºšè¯ºè¿ç®—
 
 DEFN_UNARY_FUN(Inc, x, A(Value(x) + 1));
 DEFN_UNARY_FUN(Neg, x, A(-Value(x)));
@@ -10,7 +10,7 @@ using Dec = C(Neg, Inc, Neg);
 
 #pragma endregion
 
-#pragma region ËÄÔòÔËËã
+#pragma region å››åˆ™è¿ç®—
 
 DEFN_BINARY_FUN(Add, x, y, A(Value(x) + Value(y), Type(x)));
 DEFN_BINARY_FUN(Sub, x, y, A(Value(x) - Value(y), Type(x)));
@@ -20,25 +20,25 @@ DEFN_BINARY_FUN(Mod, x, y, A(Value(x) % Value(y), Type(x)));
 
 #pragma endregion
 
-#pragma region Î»ÔËËãºÍÂß¼­ÔËËã
+#pragma region ä½è¿ç®—å’Œé€»è¾‘è¿ç®—
 
-#define DEFN_UNARY_LOGIC_FUN(name, var, bitop, logicop)   \
+#define DEFN_UNARY_LOGIC_FUN(name, var, bit_op, logic_op) \
     struct name                                           \
     {                                                     \
         FUNC_HEAD_THROW(name);                            \
         template <is::arg var>                            \
         struct apply_on<var>                              \
         {                                                 \
-            using ret = A(bitop Value(var), Type(var));   \
+            using ret = A(bit_op Value(var), Type(var));  \
         };                                                \
         template <is::bool_type var>                      \
         struct apply_on<var>                              \
         {                                                 \
-            using ret = A(logicop Value(var), Type(var)); \
+            using ret = A(logic_op Value(var), Type(var));\
         };                                                \
     }
 
-#define DEFN_BINARY_LOGIC_FUN(name, var1, var2, bitop, logicop)                    \
+#define DEFN_BINARY_LOGIC_FUN(name, var1, var2, bit_op, logic_op)                  \
     struct name                                                                    \
     {                                                                              \
         FUNC_HEAD_THROW(name);                                                     \
@@ -48,14 +48,14 @@ DEFN_BINARY_FUN(Mod, x, y, A(Value(x) % Value(y), Type(x)));
             is::arg var2>                                                          \
         struct apply_on<L(var1, var2)>                                             \
         {                                                                          \
-            using ret = A(Value(var1) bitop Value(var2), Type(var1));              \
+            using ret = A(Value(var1) bit_op Value(var2), Type(var1));             \
         };                                                                         \
         template <                                                                 \
             is::bool_type var1,                                                    \
             is::arg var2>                                                          \
         struct apply_on<L(var1, var2)>                                             \
         {                                                                          \
-            using ret = A(Value(var1) logicop RetV(cast, var2, bool), Type(var1)); \
+            using ret = A(Value(var1) logic_op RetV(cast, var2, bool), Type(var1));\
         };                                                                         \
     }
 
