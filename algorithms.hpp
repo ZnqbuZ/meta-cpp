@@ -1,7 +1,7 @@
 #pragma once
 
-#include "types.h"
-#include "arithmetics.h"
+#include "types.hpp"
+#include "arithmetics.hpp"
 
 using is_greater_equal = C(Not, is_less);
 using is_less_equal = C(Not, is_greater);
