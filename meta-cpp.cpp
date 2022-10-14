@@ -1,4 +1,4 @@
-﻿#include "types.hpp"
+#include "types.hpp"
 #include "algorithms.hpp"
 #include "arithmetics.hpp"
 #include "stream.hpp"
