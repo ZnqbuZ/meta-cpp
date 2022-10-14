@@ -1,7 +1,7 @@
 #pragma once
 
-#include "types.h"
-#include "algorithms.h"
+#include "types.hpp"
+#include "algorithms.hpp"
 
 struct force {
     template<is::delayed d>

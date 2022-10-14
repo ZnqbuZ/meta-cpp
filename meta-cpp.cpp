@@ -1,7 +1,7 @@
-﻿#include "types.h"
-#include "algorithms.h"
-#include "arithmetics.h"
-#include "stream.h"
+﻿#include "types.hpp"
+#include "algorithms.hpp"
+#include "arithmetics.hpp"
+#include "stream.hpp"
 
 #ifdef _MSC_VER
 #define SHOW(...) __VA_ARGS__
