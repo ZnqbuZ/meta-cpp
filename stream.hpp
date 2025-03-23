@@ -66,7 +66,6 @@ struct make::stream {
 
 struct calc {
     FUNC_HEAD_THROW(calc);
-
     WAIT_FOR_n_DELAYED_ARGS(calc, 2);
 
     template<is::not_delayed s, is::not_delayed times> requires (is::stream<s> && is::arg<times>)
