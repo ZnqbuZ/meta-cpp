@@ -58,7 +58,8 @@ SHOW(Ret(deep_map, L(Inc, Neg, Dec), test_list_1));
 
 SHOW(Ret(map, swap, test_list_2));
 
-// 这就是为什么不允许只有一个元素的和空的表
+// TODO: 二元函数的 map 应该科里化
+// @Deprecated(这就是为什么不允许只有一个元素的和空的表)
 SHOW(Ret(map, L(Add, Sub, Mul, Div), test_list_2));
 
 SHOW(Ret(map, L(And, Or, Xor, NAnd, NOr), test_list_2));
@@ -146,11 +147,10 @@ using prime_seq =
     L(A(2), D(mk_prime_finder, L(A(2), force::avoid<Ret(peek_back, integer_seq)>)));
 #pragma endregion
 
-// #define STREAM_TEST
+//#define STREAM_TEST
 
 #ifdef STREAM_TEST
-
-SHOW(Ret(pop_back, Ret(calc, integer_seq, A(9))));
+SHOW(Ret(pop_back, Ret(calc, integer_seq, A(9)));
 SHOW(Ret(pop_back, Ret(calc, even_seq, A(9))));
 SHOW(Ret(pop_back, Ret(calc, fibonacci_seq, A(9))));
 SHOW(Ret(pop_back, Ret(calc, odd_seq, A(9))));
